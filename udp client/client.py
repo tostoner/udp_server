@@ -18,6 +18,8 @@ def recieve_data(max_udp_packet_size):
     while True:
 
         data, addr = sock.recvfrom(max_udp_packet_size)
+        if data:
+            print("found data")
         if data[0] == 0:
             parts[0] = data[1]
         if data[0] == 1:
