@@ -3,6 +3,7 @@ import imutils
 import numpy as np
 import socket
 import ffmpeg
+import cv2
 
 def read_send(sock):
     camera = picamera.PiCamera()
@@ -12,10 +13,11 @@ def read_send(sock):
     camera.resolution = (320,240)
     array = np.zeros((320, 240), dtype=np.uint8)
     while True:
-        frame = camera.capture(array, format='grayscale')
+        frame = camera.capture(array, format='color')
         #frame = imutils.resize(frame, width = 640)
         frame = np.array(frame)
-        compressed_frame = ffmpeg.input(frame).output('pipe:', format='png').capture()
+        grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        compressed_frame = ffmpeg.input(grayscale_frame).output('pipe:', format='png').capture()
         
 
         try:
