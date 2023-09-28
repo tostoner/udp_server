@@ -23,7 +23,7 @@ def read_send(sock):
         grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         print("4")
 
-        compressed_frame = ffmpeg.input(grayscale_frame).output('pipe:', format='png').capture()
+        compressed_frame = ffmpeg.input(grayscale_frame).output('pipe:', format='jpeg').capture()
         print(f"sending frame of len: {len(compressed_frame)}")
         
 
