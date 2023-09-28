@@ -13,10 +13,16 @@ def read_send(sock):
     camera.resolution = (1920,1280)
     array = np.zeros((1920,1280), dtype=np.uint8)
     while True:
+        print("1")
         frame = camera.capture(array, format='png', resize = (1920,1280))
         #frame = imutils.resize(frame, width = 640)
+        print("2")
         frame = np.array(frame)
+        print("3")
+
         grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        print("4")
+
         compressed_frame = ffmpeg.input(grayscale_frame).output('pipe:', format='png').capture()
         print(f"sending frame of len: {len(compressed_frame)}")
         
