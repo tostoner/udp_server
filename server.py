@@ -14,10 +14,10 @@ def read_send(sock):
     array = np.zeros((1920,1280), dtype=np.uint8)
     while True:
         print("1")
-        frame = camera.capture(array, format='png', resize = (1920,1280))
+        camera.capture(array, format='png', resize = (1920,1280))
         #frame = imutils.resize(frame, width = 640)
         print("2")
-        frame = np.array(frame)
+        frame = np.array(array)
         print("3")
 
         grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
