@@ -9,8 +9,8 @@ def read_send(sock):
     print("camera started")
 
 
-    camera.resolution = (1920,1080)
-    array = np.zeros((1920, 1080, 3), dtype=np.uint8)
+    camera.resolution = (640,480)
+    array = np.zeros((640, 480, 3), dtype=np.uint8)
     while True:
         frame = camera.capture(array, format='rgb')
         frame = imutils.resize(frame, width = 640)
