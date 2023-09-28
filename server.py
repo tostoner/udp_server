@@ -23,16 +23,13 @@ if __name__ == "__main__":
         frame = np.array(frame)
         compressed_frame = ffmpeg.input(frame).output('pipe:', format='png').run(pipe_stdout=True).stdout.read()
         
-        parts = np.split(compressed_frame, 3)
-        for i, part in enumerate(parts):
-            parts[i] = (i,part)
 
-            try:
-                print("starting send")
-                sock.sendto(parts[i].buffer(), ("127.0.0.1", 5006))
-                print("frame sent")
-            except socket.error as e:
-                print(e)
-                break
+        try:
+            print("starting send")
+            sock.sendto(compressed_frame, ("127.0.0.1", 5006))
+            print("frame sent")
+        except socket.error as e:
+            print(e)
+            break
 
     sock.close()
