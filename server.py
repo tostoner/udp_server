@@ -13,7 +13,7 @@ def read_send(sock):
     camera.resolution = (320,240)
     array = np.zeros((320, 240), dtype=np.uint8)
     while True:
-        frame = camera.capture(array, format='color')
+        frame = camera.capture(array, format='png')
         #frame = imutils.resize(frame, width = 640)
         frame = np.array(frame)
         grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
