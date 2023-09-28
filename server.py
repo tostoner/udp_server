@@ -4,21 +4,15 @@ import numpy as np
 import socket
 import ffmpeg
 
-if __name__ == "__main__":
-    MAX_UDP_PACKET_SIZE = 65536
-
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    sock.bind(("0.0.0.0", 5006))
-
+def read_send(sock):
     camera = picamera.PiCamera()
     print("camera started")
 
 
     camera.resolution = (1920,1080)
+    array = np.zeros(1920, 1080, 3)
     while True:
-        frame = camera.capture_array()
+        frame = camera.capture(array, format='rgb')
         frame = imutils.resize(frame, width = 640)
         frame = np.array(frame)
         compressed_frame = ffmpeg.input(frame).output('pipe:', format='png').run(pipe_stdout=True).stdout.read()
@@ -31,5 +25,17 @@ if __name__ == "__main__":
         except socket.error as e:
             print(e)
             break
-
     sock.close()
+
+def start_server(ip, port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((ip, port))
+    return sock
+
+
+if __name__ == "__main__":
+    MAX_UDP_PACKET_SIZE = 65536
+    sock = start_server("0.0.0.0", 5006)
+    read_send(sock)
+
+    
