@@ -14,7 +14,7 @@ def read_send(sock):
     array = np.zeros((1920,1280), dtype=np.uint8)
     while True:
         print("1")
-        camera.capture(array, format='png', resize = (320,240))
+        camera.capture(array, format='jpeg', resize = (320,240))
         #frame = imutils.resize(frame, width = 640)
         print("2")
         frame = np.array(array)
