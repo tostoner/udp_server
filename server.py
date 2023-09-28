@@ -1,25 +1,36 @@
 import picamera
-import imutils
 import numpy as np
 import socket
-import ffmpeg
+import subprocess
 
 def read_send(sock):
     camera = picamera.PiCamera()
     print("camera started")
 
-
-    camera.resolution = (640,480)
-    array = np.zeros((640, 480, 3), dtype=np.uint8)
+    camera.resolution = (640, 480)
+    array = np.empty((640, 480, 3), dtype=np.uint8)
     while True:
-        frame = camera.capture(array, format='rgb')
-        #frame = imutils.resize(frame, width = 640)
-        frame = np.array(frame)
-        compressed_frame = ffmpeg.input(frame).output('pipe:', format='png').capture()
+        camera.capture(array, format='rgb')
+        frame = array.tobytes()
         
-
         try:
             print("starting send")
+            ffmpeg_process = subprocess.Popen(
+                [
+                    "ffmpeg",
+                    "-f", "rawvideo",
+                    "-s", "640x480",
+                    "-pix_fmt", "rgb24",
+                    "-i", "-",
+                    "-f", "image2pipe",
+                    "-vcodec", "png",
+                    "-"
+                ],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            compressed_frame, _ = ffmpeg_process.communicate(input=frame)
             sock.sendto(compressed_frame, ("127.0.0.1", 5006))
             print("frame sent")
         except socket.error as e:
@@ -32,10 +43,7 @@ def start_server(ip, port):
     sock.bind((ip, port))
     return sock
 
-
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
     sock = start_server("0.0.0.0", 5006)
     read_send(sock)
-
-    
