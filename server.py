@@ -15,7 +15,7 @@ def read_send(sock):
         frame = camera.capture(array, format='rgb')
         #frame = imutils.resize(frame, width = 640)
         frame = np.array(frame)
-        compressed_frame = ffmpeg.input(frame).output('pipe:', format='png').run(pipe_stdout=True).stdout.read()
+        compressed_frame = ffmpeg.input(frame).output('pipe:', format='png').capture()
         
 
         try:
