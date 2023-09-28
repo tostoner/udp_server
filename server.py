@@ -46,5 +46,26 @@ if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
     sock = start_server("0.0.0.0", 5006)
     read_send(sock)
+#
+#micro@rasp:~/udp_server $ python3 server.py
+#camera started
+#1
+#2
+#3
+#OpenCV Error: Assertion failed (scn == 3 || scn == 4) in cvtColor, file /build/opencv-L65chJ/opencv-3.2.0+dfsg/modules/imgproc/src/color.cpp, line 9748
+#Traceback (most recent call last):
+#  File "server.py", line 48, in <module>
+#    read_send(sock)
+#  File "server.py", line 23, in read_send
+#    grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+#cv2.error: /build/opencv
 
-    
+
+
+
+
+
+
+
+
+
