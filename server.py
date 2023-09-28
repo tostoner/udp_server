@@ -7,7 +7,7 @@ def read_send(sock):
     camera = picamera.PiCamera()
     print("camera started")
 
-    camera.resolution = (640, 480)
+    camera.resolution = (320, 240)
     array = np.empty((640, 480, 3), dtype=np.uint8)
     while True:
         camera.capture(array, format='rgb')
@@ -32,7 +32,8 @@ def read_send(sock):
             )
             compressed_frame, _ = ffmpeg_process.communicate(input=frame)
             sock.sendto(compressed_frame, ("127.0.0.1", 5006))
-            print("frame sent")
+            print(f"frame sent. size: {len(compressed_frame)}")
+            
         except socket.error as e:
             print(e)
             break
