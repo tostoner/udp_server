@@ -7,15 +7,17 @@ import sys
 import cv2
 import threading
 
-def capture_send(sock, dest):
-    camera = cv2.VideoCapture(0)
+def capture_send(sock):
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     print("camera started")
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     print("capture frame resized")
 
     while True:
-        #frame = imutils.resize(frame, width = 640)
+        data,addr = sock.recvfrom(4096)
+        print(f"recieved from client: {data}")
+
         ret,frame = camera.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -29,12 +31,12 @@ def capture_send(sock, dest):
             continue
 
         try:
-            sock.sendto(encoded_frame.tobytes(), dest)
+            sock.sendto(encoded_frame.tobytes(), addr)
             print(f"{sys.getsizeof(encoded_frame.tobytes())} bytes sent")
 
             
         except socket.error as e:
-            frame_size = sys.getsizeof(encoded_frame.tobytes())  # Get the size of the encoded frame in bytes
+            frame_size = sys.getsizeof(encoded_frame.tobytes()) 
             print("Frame size:", frame_size)
             print(e)
             break
@@ -49,8 +51,8 @@ def start_server(ip, port):
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
-    sock = start_server("10.25.46.172", 55555)
-    capture_send(sock, ('10.22.179.34', 50077))
+    sock = start_server("127.0.0.1", 12345)#må ditte være samme som raspi eller kan den være random?
+    capture_send(sock)
 
 
 
