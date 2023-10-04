@@ -29,8 +29,9 @@ def capture_send(sock, dest):
             continue
 
         try:
-            print("starting send")
             sock.sendto(encoded_frame.tobytes(), dest)
+            print(f"{sys.getsizeof(encoded_frame.tobytes()} bytes sendt")
+            
         except socket.error as e:
             frame_size = sys.getsizeof(encoded_frame.tobytes())  # Get the size of the encoded frame in bytes
             print("Frame size:", frame_size)
