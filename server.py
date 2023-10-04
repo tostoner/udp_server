@@ -1,10 +1,8 @@
 import cv2
-import imutils
 import numpy as np
 import socket
 import ffmpeg
 import sys
-import cv2
 import threading
 
 def capture_send(sock):
@@ -40,6 +38,8 @@ def capture_send(sock):
             print("Frame size:", frame_size)
             print(e)
             break
+
+    camera.release()  # Release the camera resource
     sock.close()
 
 def start_server(ip, port):
