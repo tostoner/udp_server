@@ -49,7 +49,7 @@ def start_server(ip, port):
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65508
-    sock = start_server("10.25.46.172", 13)
+    sock = start_server("10.25.46.172", 49154)
     capture_send(sock, ('239.9.9.11', 49155))
 
 
