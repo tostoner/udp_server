@@ -58,7 +58,7 @@ if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65507
     IP_ADDRESS = "10.25.46.172"
     PORT = 49154
-    DEST_IP_ADDRESS = '239.9.9.11'
+    DEST_IP_ADDRESS = '10.22.179.34'
     DEST_PORT = 49155
 
     sock = start_server(IP_ADDRESS, PORT)
