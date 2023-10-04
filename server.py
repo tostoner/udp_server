@@ -1,11 +1,11 @@
 import cv2
-import imutils
+
 import numpy as np
 import socket
-import ffmpeg
-import sys
+
 import cv2
-import threading
+import socket
+import sys
 
 def capture_send(sock, dest):
     camera = cv2.VideoCapture(0)
@@ -14,30 +14,37 @@ def capture_send(sock, dest):
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     print("capture frame resized")
 
+    error_count = 0
     while True:
-        #frame = imutils.resize(frame, width = 640)
-        ret,frame = camera.read()
+        ret, frame = camera.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             _, encoded_frame = cv2.imencode('.jpg', frame)
             if encoded_frame is None:
                 print("Error encoding frame")
+                error_count += 1
+                if error_count > 5:  
+                    break
                 continue
             
         if not ret:
             print("frame not found")
             continue
 
-        try:
-            sock.sendto(encoded_frame.tobytes(), dest)
-            print(f"{sys.getsizeof(encoded_frame.tobytes())} bytes sent")
+        data = encoded_frame.tobytes()
+        if sys.getsizeof(data) > MAX_UDP_PACKET_SIZE:
+            print("Encoded frame size exceeds maximum UDP packet size")
+            continue
 
-            
+        try:
+            sock.sendto(data, dest)
+            print(f"{sys.getsizeof(data)} bytes sent")
         except socket.error as e:
-            frame_size = sys.getsizeof(encoded_frame.tobytes())  # Get the size of the encoded frame in bytes
-            print("Frame size:", frame_size)
+            print("Frame size:", sys.getsizeof(data))
             print(e)
             break
+
+    camera.release()  # Release the camera resource
     sock.close()
 
 def start_server(ip, port):
@@ -48,9 +55,15 @@ def start_server(ip, port):
 
 
 if __name__ == "__main__":
-    MAX_UDP_PACKET_SIZE = 65508
-    sock = start_server("10.25.46.172", 49154)
-    capture_send(sock, ('239.9.9.11', 49155))
+    MAX_UDP_PACKET_SIZE = 65507
+    IP_ADDRESS = "10.25.46.172"
+    PORT = 49154
+    DEST_IP_ADDRESS = '239.9.9.11'
+    DEST_PORT = 49155
+
+    sock = start_server(IP_ADDRESS, PORT)
+    capture_send(sock, (DEST_IP_ADDRESS, DEST_PORT))
+
 
 
 
