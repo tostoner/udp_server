@@ -1,37 +1,39 @@
-import picamera
+import cv2
 import imutils
 import numpy as np
 import socket
 import ffmpeg
+import sys
 import cv2
+import threading
 
-def read_send(sock):
-    camera = picamera.PiCamera()
+def capture_send(sock, dest):
+    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     print("camera started")
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+    print("capture frame resized")
 
-
-    camera.resolution = (1920,1280)
-    array = np.zeros((1920,1280), dtype=np.uint8)
     while True:
-        print("1")
-        camera.capture(array, format='jpeg', resize = (320,240))
         #frame = imutils.resize(frame, width = 640)
-        print("2")
-        frame = np.array(array)
-        print("3")
-
-        grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        print("4")
-
-        compressed_frame = ffmpeg.input(grayscale_frame).output('pipe:', format='jpeg').capture()
-        print(f"sending frame of len: {len(compressed_frame)}")
-        
+        ret,frame = camera.read()
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            _, encoded_frame = cv2.imencode('.jpg', frame)
+            if encoded_frame is None:
+                print("Error encoding frame")
+                continue
+            
+        if not ret:
+            print("frame not found")
+            continue
 
         try:
             print("starting send")
-            sock.sendto(compressed_frame, ("127.0.0.1", 5006))
-            print(f"frame sent. size: {len(compressed_frame)}")
+            sock.sendto(encoded_frame.tobytes(), dest)
         except socket.error as e:
+            frame_size = sys.getsizeof(encoded_frame.tobytes())  # Get the size of the encoded frame in bytes
+            print("Frame size:", frame_size)
             print(e)
             break
     sock.close()
@@ -39,26 +41,15 @@ def read_send(sock):
 def start_server(ip, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((ip, port))
+    print("Server started")
     return sock
 
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
     sock = start_server("0.0.0.0", 5006)
-    read_send(sock)
-#
-#micro@rasp:~/udp_server $ python3 server.py
-#camera started
-#1
-#2
-#3
-#OpenCV Error: Assertion failed (scn == 3 || scn == 4) in cvtColor, file /build/opencv-L65chJ/opencv-3.2.0+dfsg/modules/imgproc/src/color.cpp, line 9748
-#Traceback (most recent call last):
-#  File "server.py", line 48, in <module>
-#    read_send(sock)
-#  File "server.py", line 23, in read_send
-#    grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-#cv2.error: /build/opencv
+    capture_send(sock, ('0.0.0.0', 5007))
+
 
 
 
