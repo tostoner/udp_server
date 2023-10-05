@@ -6,7 +6,7 @@ import sys
 import threading
 
 def capture_send(sock):
-    camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    camera = cv2.VideoCapture(0)
     print("camera started")
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
@@ -53,14 +53,3 @@ if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
     sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     capture_send(sock)
-
-
-
-
-
-
-
-
-
-
-
