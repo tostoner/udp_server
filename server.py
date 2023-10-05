@@ -1,9 +1,7 @@
 import cv2
 import numpy as np
 import socket
-import ffmpeg
 import sys
-import threading
 
 def capture_send(sock):
     camera = cv2.VideoCapture(0)
@@ -13,6 +11,7 @@ def capture_send(sock):
     print("capture frame resized")
 
     while True:
+        print("waiting for msg")
         data,addr = sock.recvfrom(4096)
         print(f"recieved from client: {data}")
 
