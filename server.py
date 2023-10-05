@@ -12,7 +12,7 @@ def init_camera():
     print("capture frame resized")
     return camera
 
-def capture(camera):
+def capture_and_compress(camera):
     ret,frame = camera.read()
     if ret:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -31,12 +31,6 @@ def recv_data(sock):
     data = data.decode("utf-8")
     return data,addr
 
-def compress_frame(frame):
-    _, encoded_frame = cv2.imencode('.jpg', frame)
-    if encoded_frame is None:
-        print("Error encoding frame")
-        return None
-    return encoded_frame.tobytes()
 
 def send_frame(sock, frame, clients):
     try:
@@ -67,11 +61,11 @@ if __name__ == "__main__":
 
         if data == "video":
             while data!= "stop video":
-                frame = capture(camera)
-                if frame:
-                    compress_frame(frame)
-                    send_frame(sock, frame, addr)
-                if not frame:
+                compressed_frame = capture_and_compress(camera)
+                if compressed_frame:
+
+                    send_frame(sock, compressed_frame, addr)
+                if not compressed_frame:
                     print("Error capturing frame")
 
             
