@@ -53,14 +53,3 @@ if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
     sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     capture_send(sock)
-
-
-
-
-
-
-
-
-
-
-
