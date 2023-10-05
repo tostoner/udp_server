@@ -28,6 +28,7 @@ def capture(camera):
 def recv_data(sock):
     data,addr = sock.recvfrom(4096)
     print(f"recieved from client: {data}")
+    data = data.decode("utf-8")
     return data,addr
 
 def compress_frame(frame):
