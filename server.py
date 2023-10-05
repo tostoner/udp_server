@@ -27,14 +27,13 @@ def capture_and_compress(camera):
     
 def recv_data(sock):
     data,addr = sock.recvfrom(4096)
-    print(f"recieved from client: {data}")
     data = data.decode("utf-8")
     return data,addr
 
 
-def send_frame(sock, frame, clients):
+def send_frame(sock, frame, client):
     try:
-        sock.sendto(frame, clients[0])
+        sock.sendto(frame, client)
         print(f"{sys.getsizeof(frame)} bytes sent")
     except socket.error as e:
         frame_size = sys.getsizeof(frame) 
