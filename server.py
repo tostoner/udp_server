@@ -3,6 +3,7 @@ import numpy as np
 import socket
 import sys
 import threading
+import queue as Queue
 
 def init_camera():
     camera = cv2.VideoCapture(0)
@@ -25,10 +26,24 @@ def capture_and_compress(camera):
         print("frame not found")
         return None
     
-def recv_data(sock):
+def recv_data(sock,queue):
     data,addr = sock.recvfrom(4096)
     data = data.decode("utf-8")
-    return data,addr
+    queue.put(data, addr)
+
+def handle_connection(queue):
+    data,addr = queue.get()
+    if data == "video":
+        while data!= "stop video":
+            compressed_frame = capture_and_compress(camera)
+            if compressed_frame:#Kan bytte til switch case fordi det er rasksare
+
+                send_frame(sock, compressed_frame, addr)
+            if not compressed_frame:
+                print("Error capturing frame")
+    else:
+        if data is not None:
+            print(f"recieved from client: {data}")
 
 
 def send_frame(sock, frame, client):
@@ -50,22 +65,19 @@ def start_server(ip, port):
 
 
 if __name__ == "__main__":
+    queue = Queue.Queue()
     MAX_UDP_PACKET_SIZE = 65536
     sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
 
-    while True:
-        data,addr = recv_data(sock)
-        print(f"recieved from client: {data}")
+    reciever_thread = threading.Thread(target=recv_data, args=(sock,queue))
+    handler_thread = threading.Thread(target=handle_connection, args=(queue))
+    
+    reciever_thread.start()
+    handler_thread.start()
 
-        if data == "video":
-            while data!= "stop video":
-                compressed_frame = capture_and_compress(camera)
-                if compressed_frame:
-
-                    send_frame(sock, compressed_frame, addr)
-                if not compressed_frame:
-                    print("Error capturing frame")
+    camera.release()
+    sock.close
 
             
     
