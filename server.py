@@ -71,13 +71,14 @@ if __name__ == "__main__":
     camera = init_camera()
 
     reciever_thread = threading.Thread(target=recv_data, args=(sock,queue))
-    handler_thread = threading.Thread(target=handle_connection, args=(queue))
+    handler_thread = threading.Thread(target=handle_connection, args=(queue,))
+
     
     reciever_thread.start()
     handler_thread.start()
 
     camera.release()
-    sock.close
+    sock.close()
 
             
     
