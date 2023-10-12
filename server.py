@@ -4,6 +4,7 @@ import socket
 import sys
 import threading
 import queue as Queue
+import time
 
 def init_camera():
     camera = cv2.VideoCapture(0)
@@ -28,9 +29,13 @@ def capture_and_compress(camera):
     
 def recv_data(sock,queue):
     while True:
-        data,addr = sock.recvfrom(4096)
-        data = data.decode("utf-8")
-        queue.put((data, addr))
+        try:
+            data,addr = sock.recvfrom(4096)
+            data = data.decode("utf-8")
+            queue.put((data, addr))
+        except OSError as e:
+            print(f"Socket error: {str(e)}")
+            break
 
 def handle_connection(queue):
     while True:
@@ -46,6 +51,7 @@ def handle_connection(queue):
         else:
             if data is not None:
                 print(f"recieved from client: {data}")
+        time.sleep(0.01)
 
 
 def send_frame(sock, frame, client):
@@ -76,11 +82,16 @@ if __name__ == "__main__":
     handler_thread = threading.Thread(target=handle_connection, args=(queue,))
 
     
-    reciever_thread.start()
-    handler_thread.start()
+    try:
+        reciever_thread.start()
+        handler_thread.start()
+    
+        reciever_thread.join()  # This will wait for thread to finish
+        handler_thread.join()   # This will wait for thread to finish
+    finally:
+        camera.release()
+        sock.close()
 
-    camera.release()
-    sock.close()
 
             
     
