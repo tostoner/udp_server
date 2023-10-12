@@ -51,7 +51,7 @@ def handle_connection(queue):
         else:
             if data is not None:
                 print(f"recieved from client: {data}")
-        time.sleep(0.01)
+        
 
 
 def send_frame(sock, frame, client):
