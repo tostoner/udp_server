@@ -27,23 +27,25 @@ def capture_and_compress(camera):
         return None
     
 def recv_data(sock,queue):
-    data,addr = sock.recvfrom(4096)
-    data = data.decode("utf-8")
-    queue.put((data, addr))
+    while True:
+        data,addr = sock.recvfrom(4096)
+        data = data.decode("utf-8")
+        queue.put((data, addr))
 
 def handle_connection(queue):
-    data,addr = queue.get()
-    if data == "video":
-        while data!= "stop video":
-            compressed_frame = capture_and_compress(camera)
-            if compressed_frame:#Kan bytte til switch case fordi det er rasksare
-
-                send_frame(sock, compressed_frame, addr)
-            if not compressed_frame:
-                print("Error capturing frame")
-    else:
-        if data is not None:
-            print(f"recieved from client: {data}")
+    while True:
+        data,addr = queue.get()
+        if data == "video":
+            while data!= "stop video":
+                compressed_frame = capture_and_compress(camera)
+                if compressed_frame:#Kan bytte til switch case fordi det er rasksare
+    
+                    send_frame(sock, compressed_frame, addr)
+                if not compressed_frame:
+                    print("Error capturing frame")
+        else:
+            if data is not None:
+                print(f"recieved from client: {data}")
 
 
 def send_frame(sock, frame, client):
