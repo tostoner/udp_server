@@ -5,6 +5,7 @@ import sys
 import threading
 import queue as Queue
 import time
+import raspicam
 
 def init_camera():
     camera = cv2.VideoCapture(0)
