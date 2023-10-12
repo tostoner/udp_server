@@ -29,7 +29,7 @@ def capture_and_compress(camera):
 def recv_data(sock,queue):
     data,addr = sock.recvfrom(4096)
     data = data.decode("utf-8")
-    queue.put(data, addr)
+    queue.put((data, addr))
 
 def handle_connection(queue):
     data,addr = queue.get()
