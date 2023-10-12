@@ -3,8 +3,11 @@ import numpy as np
 import socket
 import sys
 import threading
-import queue as Queue
+import queue
 import time
+import signal
+
+stopflag = threading.Event()
 
 def init_camera():
     camera = cv2.VideoCapture(0)
@@ -27,31 +30,48 @@ def capture_and_compress(camera):
         print("frame not found")
         return None
     
-def recv_data(sock,queue):
-    while True:
+def recv_data(sock,queue, stopflag):
+    while not stopflag.is_set():
         try:
             data,addr = sock.recvfrom(4096)
             data = data.decode("utf-8")
+            print(f"data recieved {data}")
             queue.put((data, addr))
         except OSError as e:
             print(f"Socket error: {str(e)}")
             break
+        if stopflag.is_set():
+            break
 
-def handle_connection(queue):
-    while True:
-        data,addr = queue.get()
+def handle_connection(camera, myqueue, sock, stopflag):
+    startVideo = False
+
+    while not stopflag.is_set():
+        try:
+            data,addr = myqueue.get(timeout=1)
+        except queue.Empty:
+            print("Queue empty")
+            data = "no input"
+
         if data == "video":
-            while data!= "stop video":
-                compressed_frame = capture_and_compress(camera)
-                if compressed_frame:#Kan bytte til switch case fordi det er rasksare
-    
-                    send_frame(sock, compressed_frame, addr)
-                if not compressed_frame:
-                    print("Error capturing frame")
+            startVideo = True
+        if data == "stop_video":
+            startVideo = False
+
+        if startVideo == True:
+            compressed_frame = capture_and_compress(camera)
+            if compressed_frame:#Kan bytte til switch case fordi det er rasksare
+                send_frame(sock, compressed_frame, addr)
+            if not compressed_frame:
+                print("Error capturing frame")
+        
+
+                
         else:
             if data is not None:
                 print(f"recieved from client: {data}")
-        
+        if stopflag.is_set():
+            break
 
 
 def send_frame(sock, frame, client):
@@ -71,26 +91,42 @@ def start_server(ip, port):
     print("Server started")
     return sock
 
+def signal_handler(sig, frame):
+    print('You pressed Ctrl+C!')
+    stopflag.set()
 
 if __name__ == "__main__":
-    queue = Queue.Queue()
     MAX_UDP_PACKET_SIZE = 65536
-    sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
+    SOCK = start_server("127.0.0.1", 12395)
+    print(f"server touple is {SOCK.getsockname()}")
+    #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
 
-    reciever_thread = threading.Thread(target=recv_data, args=(sock,queue))
-    handler_thread = threading.Thread(target=handle_connection, args=(queue,))
+    q = queue.Queue()
 
     
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+
+    reciever_thread = threading.Thread(target=recv_data, args=(SOCK,q, stopflag))
+    handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag))
+
+    
+
     try:
         reciever_thread.start()
         handler_thread.start()
-    
-        reciever_thread.join()  # This will wait for thread to finish
-        handler_thread.join()   # This will wait for thread to finish
+
+
+        reciever_thread.join()
+        handler_thread.join()
+    except KeyboardInterrupt:
+        print("Keyboard interrupt") #SIGNALS VIRKA IKKJE PÅ WINDOWS :( KANSKJE PÅ RASPI? :)
     finally:
         camera.release()
-        sock.close()
+        SOCK.close()
 
 
             
