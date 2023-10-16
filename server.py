@@ -97,7 +97,7 @@ def signal_handler(sig, frame):
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
-    SOCK = start_server("127.0.0.1", 12395)
+    SOCK = start_server("10.25.46.172", 12395)
     print(f"server touple is {SOCK.getsockname()}")
     #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
