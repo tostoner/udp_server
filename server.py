@@ -6,6 +6,8 @@ import threading
 import queue
 import time
 import signal
+from sphero_sdk import SpheroRvrObserver
+from sphero_sdk import RawMotorModesEnum
 
 stopflag = threading.Event()
 
@@ -42,6 +44,14 @@ def recv_data(sock,queue, stopflag):
             break
         if stopflag.is_set():
             break
+def drive_forward():
+    rvr.raw_motors(
+            left_mode=RawMotorModesEnum.forward.value,
+            left_duty_cycle=128,  # Valid duty cycle range is 0-255
+            right_mode=RawMotorModesEnum.forward.value,
+            right_duty_cycle=128  # Valid duty cycle range is 0-255
+            time.sleep(1)
+        )
 
 def handle_connection(camera, myqueue, sock, stopflag):
     startVideo = False
@@ -57,6 +67,8 @@ def handle_connection(camera, myqueue, sock, stopflag):
             startVideo = True
         if data == "stop_video":
             startVideo = False
+        if data == "forward":
+            drive_forward()
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
