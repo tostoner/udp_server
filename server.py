@@ -8,19 +8,11 @@ import time
 import signal
 from sphero_sdk import SpheroRvrObserver
 from sphero_sdk import RawMotorModesEnum
-rvr = SpheroRvrObserver()
 
 stopflag = threading.Event()
 
 #grtioø
-def init_rvr():
-    try:
-        rvr.wake()
-        time.sleep(2)
-        rvr.reset_yaw()
-        print("RVR initialized")
-    except Exception as e:
-        print(f"Error initializing RVR: {e}")
+
 
 def init_camera():
     camera = cv2.VideoCapture(0)
@@ -44,6 +36,7 @@ def capture_and_compress(camera):
         return None
     
 def recv_data(sock,queue, stopflag):
+
     while not stopflag.is_set():
         try:
             data,addr = sock.recvfrom(4096)
@@ -55,7 +48,7 @@ def recv_data(sock,queue, stopflag):
             break
         if stopflag.is_set():
             break
-def drive_forward():
+def drive_forward(rvr):
     rvr.raw_motors(
             left_mode=RawMotorModesEnum.forward.value,
             left_duty_cycle=128,  # Valid duty cycle range is 0-255
@@ -105,6 +98,14 @@ def drive_forward():
 
 def handle_connection(camera, myqueue, sock, stopflag):
     startVideo = False
+    rvr = SpheroRvrObserver()
+    try:
+        rvr.wake()
+        time.sleep(2)
+        rvr.reset_yaw()
+        print("RVR initialized")
+    except Exception as e:
+        print(f"Error initializing RVR: {e}")
 
     while not stopflag.is_set():
         try:
@@ -118,7 +119,7 @@ def handle_connection(camera, myqueue, sock, stopflag):
         if data == "stop_video":
             startVideo = False
         if data == "forward":
-            drive_forward()
+            drive_forward(rvr)
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
