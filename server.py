@@ -6,12 +6,14 @@ import threading
 import queue
 import time
 import signal
+import sys
+import os
+
+sys.path.append('~/sphero-sdk-raspberrypi-python')
 from sphero_sdk import SpheroRvrObserver
 from sphero_sdk import RawMotorModesEnum
 
 stopflag = threading.Event()
-
-#grtioø
 
 
 def init_camera():
@@ -102,6 +104,7 @@ def handle_connection(camera, myqueue, sock, stopflag):
     try:
         rvr.wake()
         time.sleep(2)
+        rvr.led_control.set_all_leds_rgb(red=0, green=255, blue=0)
         rvr.reset_yaw()
         print("RVR initialized")
     except Exception as e:
@@ -190,6 +193,7 @@ if __name__ == "__main__":
     finally:
         camera.release()
         SOCK.close()
+        rvr.close()
 
 
             
