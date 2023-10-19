@@ -130,11 +130,11 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         if data == "forward":
             drive_forward(rvr)
         if data == "backward":
-            drive_forward(rvr)
+            drive_backwards(rvr)
         if data == "left":
-            drive_forward(rvr)
+            rotate_left(rvr)
         if data == "right":
-            drive_forward(rvr)
+            rotate_right(rvr)
 
 
         if startVideo == True:
