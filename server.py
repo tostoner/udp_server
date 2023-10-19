@@ -83,46 +83,34 @@ def drive_forward(rvr):
             right_mode=RawMotorModesEnum.forward.value,
             right_duty_cycle=128  # Valid duty cycle range is 0-255
         )
+    time.sleep(0.2)
 
-    # Delay to allow RVR to drive
-    time.sleep(1)
-
+def drive_backwards(rvr):
     rvr.raw_motors(
-        left_mode=RawMotorModesEnum.reverse.value,
-        left_duty_cycle=64,  # Valid duty cycle range is 0-255
-        right_mode=RawMotorModesEnum.reverse.value,
-        right_duty_cycle=64  # Valid duty cycle range is 0-255
-    )
-
-    # Delay to allow RVR to drive
-    time.sleep(1)
-
+            left_mode=RawMotorModesEnum.backward.value,
+            left_duty_cycle=128,  # Valid duty cycle range is 0-255
+            right_mode=RawMotorModesEnum.backward.value,
+            right_duty_cycle=128  # Valid duty cycle range is 0-255
+        )
+    time.sleep(0.2)
+    
+def rotate_left(rvr):
     rvr.raw_motors(
-        left_mode=RawMotorModesEnum.reverse.value,
-        left_duty_cycle=128,  # Valid duty cycle range is 0-255
-        right_mode=RawMotorModesEnum.forward.value,
-        right_duty_cycle=128  # Valid duty cycle range is 0-255
-    )
+            left_mode=RawMotorModesEnum.backward.value,
+            left_duty_cycle=128,  # Valid duty cycle range is 0-255
+            right_mode=RawMotorModesEnum.forward.value,
+            right_duty_cycle=128  # Valid duty cycle range is 0-255
+        )
+    time.sleep(0.2)
 
-    # Delay to allow RVR to drive
-    time.sleep(1)
-
+def rotate_right(rvr):
     rvr.raw_motors(
-        left_mode=RawMotorModesEnum.forward.value,
-        left_duty_cycle=128,  # Valid duty cycle range is 0-255
-        right_mode=RawMotorModesEnum.forward.value,
-        right_duty_cycle=128  # Valid duty cycle range is 0-255
-    )
-
-    # Delay to allow RVR to drive
-    time.sleep(1)
-
-    rvr.raw_motors(
-        left_mode=RawMotorModesEnum.off.value,
-        left_duty_cycle=0,  # Valid duty cycle range is 0-255
-        right_mode=RawMotorModesEnum.off.value,
-        right_duty_cycle=0  # Valid duty cycle range is 0-255
-    )
+            left_mode=RawMotorModesEnum.forward.value,
+            left_duty_cycle=128,  # Valid duty cycle range is 0-255
+            right_mode=RawMotorModesEnum.backward.value,
+            right_duty_cycle=128  # Valid duty cycle range is 0-255
+        )
+    time.sleep(0.2)
 
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
@@ -141,6 +129,13 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             startVideo = False
         if data == "forward":
             drive_forward(rvr)
+        if data == "backward":
+            drive_forward(rvr)
+        if data == "left":
+            drive_forward(rvr)
+        if data == "right":
+            drive_forward(rvr)
+
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
