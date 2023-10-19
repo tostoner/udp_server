@@ -10,10 +10,13 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
-from sphero_sdk import SpheroRvrObserver
-from sphero_sdk import RawMotorModesEnum
-from sphero_sdk import Colors
-from sphero_sdk import RvrLedGroups
+try:
+    from sphero_sdk import SpheroRvrObserver
+    from sphero_sdk import RawMotorModesEnum
+    from sphero_sdk import Colors
+    from sphero_sdk import RvrLedGroups
+except ImportError:
+    raise ImportError('Cannot import from sphero_sdk')
 
 stopflag = threading.Event()
 
@@ -166,7 +169,10 @@ if __name__ == "__main__":
     try:
         rvr.wake()
         time.sleep(2)
-        rvr.led_control.set_all_leds_rgb(red=0, green=255, blue=0)
+        rvr.set_all_leds(
+            led_group=RvrLedGroups.all_lights.value,
+            led_brightness_values=[color for _ in range(10) for color in [0, 255, 0]]
+        )
         rvr.reset_yaw()
         print("RVR initialized")
     except Exception as e:
