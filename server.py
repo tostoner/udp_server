@@ -168,12 +168,16 @@ if __name__ == "__main__":
 
     try:
         rvr.wake()
+        print("robot awake")
         time.sleep(2)
+        print("setting leds")
         rvr.set_all_leds(
             led_group=RvrLedGroups.all_lights.value,
             led_brightness_values=[color for _ in range(10) for color in [0, 255, 0]]
         )
+        print("leds set")
         rvr.reset_yaw()
+        print("yaw reset")
         print("RVR initialized")
     except Exception as e:
         print(f"Error initializing RVR: {e}")
