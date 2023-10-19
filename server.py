@@ -9,7 +9,7 @@ import signal
 import sys
 import os
 
-sys.path.append(os.path.expanduser('~/sphero-sdk-raspberrypi-python'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 try:
     from sphero_sdk import SpheroRvrObserver
     from sphero_sdk import RawMotorModesEnum
