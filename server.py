@@ -9,7 +9,7 @@ import signal
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+sys.path.append(os.path.expanduser('~/sphero-sdk-raspberrypi-python'))
 try:
     from sphero_sdk import SpheroRvrObserver
     from sphero_sdk import RawMotorModesEnum
@@ -190,9 +190,6 @@ if __name__ == "__main__":
 
 
     q = queue.Queue()
-
-    
-
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
