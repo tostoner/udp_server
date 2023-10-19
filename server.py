@@ -20,6 +20,27 @@ except ImportError:
 
 stopflag = threading.Event()
 
+def init_rvr():
+    rvr = SpheroRvrObserver()
+    print("robot object created")
+
+    try:
+        print("waking robot")
+        rvr.wake()
+        print("robot awake")
+        time.sleep(2)
+        print("setting leds")
+        rvr.set_all_leds(
+            led_group=RvrLedGroups.all_lights.value,
+            led_brightness_values=[color for _ in range(10) for color in [0, 255, 0]]
+        )
+        print("leds set")
+        rvr.reset_yaw()
+        print("yaw reset")
+        print("RVR initialized")
+    except Exception as e:
+        print(f"Error initializing RVR: {e}")
+    return rvr
 
 def init_camera():
     camera = cv2.VideoCapture(0)
@@ -165,25 +186,7 @@ if __name__ == "__main__":
     #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
     print("camera initialized")
-    rvr = SpheroRvrObserver()
-    print("robot object created")
-
-    try:
-        print("waking robot")
-        rvr.wake()
-        print("robot awake")
-        time.sleep(2)
-        print("setting leds")
-        rvr.set_all_leds(
-            led_group=RvrLedGroups.all_lights.value,
-            led_brightness_values=[color for _ in range(10) for color in [0, 255, 0]]
-        )
-        print("leds set")
-        rvr.reset_yaw()
-        print("yaw reset")
-        print("RVR initialized")
-    except Exception as e:
-        print(f"Error initializing RVR: {e}")
+    rvr = init_rvr()
 
 
     q = queue.Queue()
