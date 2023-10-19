@@ -164,9 +164,12 @@ if __name__ == "__main__":
     print(f"server touple is {SOCK.getsockname()}")
     #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
+    print("camera initialized")
     rvr = SpheroRvrObserver()
+    print("robot object created")
 
     try:
+        print("waking robot")
         rvr.wake()
         print("robot awake")
         time.sleep(2)
