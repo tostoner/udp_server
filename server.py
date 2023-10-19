@@ -9,7 +9,7 @@ import signal
 import sys
 import os
 
-sys.path.append('~/sphero-sdk-raspberrypi-python')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from sphero_sdk import SpheroRvrObserver
 from sphero_sdk import RawMotorModesEnum
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
     rvr = SpheroRvrObserver()
-    
+
     try:
         rvr.wake()
         time.sleep(2)
