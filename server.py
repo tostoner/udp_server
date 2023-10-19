@@ -98,17 +98,9 @@ def drive_forward(rvr):
         right_duty_cycle=0  # Valid duty cycle range is 0-255
     )
 
-def handle_connection(camera, myqueue, sock, stopflag):
+def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
-    rvr = SpheroRvrObserver()
-    try:
-        rvr.wake()
-        time.sleep(2)
-        rvr.led_control.set_all_leds_rgb(red=0, green=255, blue=0)
-        rvr.reset_yaw()
-        print("RVR initialized")
-    except Exception as e:
-        print(f"Error initializing RVR: {e}")
+    
 
     while not stopflag.is_set():
         try:
@@ -167,6 +159,17 @@ if __name__ == "__main__":
     print(f"server touple is {SOCK.getsockname()}")
     #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
+    rvr = SpheroRvrObserver()
+    
+    try:
+        rvr.wake()
+        time.sleep(2)
+        rvr.led_control.set_all_leds_rgb(red=0, green=255, blue=0)
+        rvr.reset_yaw()
+        print("RVR initialized")
+    except Exception as e:
+        print(f"Error initializing RVR: {e}")
+
 
     q = queue.Queue()
 
@@ -177,7 +180,7 @@ if __name__ == "__main__":
 
 
     reciever_thread = threading.Thread(target=recv_data, args=(SOCK,q, stopflag))
-    handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag))
+    handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag, rvr))
 
     
 
