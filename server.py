@@ -97,14 +97,19 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         if data == "stop_video":
             startVideo = False
         if data == "forward":
+            print("forward function")
             rvr.drive_forward_seconds(speed = 20, heading = heading, time_to_drive = 0.2)
         if data == "backward":
+            print("backward function")
             rvr.drive_backward_seconds(speed = 20, heading = heading , time_to_drive = 0.2)
         if data == "left":
+
             heading = heading - 5
         if data == "right":
             heading = heading + 5
 
+
+        print(f" heading is {heading}")
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
