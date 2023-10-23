@@ -6,9 +6,42 @@ import threading
 import queue
 import time
 import signal
+import sys
+import os
 
+sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
+try:
+    from sphero_sdk import SpheroRvrObserver
+    from sphero_sdk import RawMotorModesEnum
+    from sphero_sdk import Colors
+    from sphero_sdk import RvrLedGroups
+    from sphero_sdk import DriveFlagsBitmask
+except ImportError:
+    raise ImportError('Cannot import from sphero_sdk')
 
 stopflag = threading.Event()
+
+def init_rvr():
+    rvr = SpheroRvrObserver()
+    print("robot object created")
+
+    try:
+        print("waking robot")
+        rvr.wake()
+        print("robot awake")
+        time.sleep(2)
+        print("setting leds")
+        rvr.set_all_leds(
+            led_group=RvrLedGroups.all_lights.value,
+            led_brightness_values=[color for _ in range(10) for color in [0, 255, 0]]
+        )
+        print("leds set")
+        rvr.reset_yaw()
+        print("yaw reset")
+        print("RVR initialized")
+    except Exception as e:
+        print(f"Error initializing RVR: {e}")
+    return rvr
 
 def init_camera():
     camera = cv2.VideoCapture(0)
@@ -32,6 +65,7 @@ def capture_and_compress(camera):
         return None
     
 def recv_data(sock,queue, stopflag):
+
     while not stopflag.is_set():
         try:
             data,addr = sock.recvfrom(4096)
@@ -43,10 +77,41 @@ def recv_data(sock,queue, stopflag):
             break
         if stopflag.is_set():
             break
+def drive_forward(rvr):
+    rvr.drive_with_heading(
+            speed=20,  # Valid speed values are 0-255
+            heading=0,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
+        )
+    time.sleep(1)
 
+def drive_backwards(rvr):
+    rvr.drive_with_heading(
+            speed=20,  # Valid speed values are 0-255
+            heading=180,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
+        )
+    time.sleep(1)
+    
+def rotate_left(rvr):
+    rvr.drive_with_heading(
+            speed=20,  # Valid speed values are 0-255
+            heading=270,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
+        )
+    time.sleep(1)
 
-def handle_connection(camera, myqueue, sock, stopflag):
+def rotate_right(rvr):
+    rvr.drive_with_heading(
+            speed=20,  # Valid speed values are 0-255
+            heading=180,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
+        )
+    time.sleep(1)
+
+def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
+    
 
     while not stopflag.is_set():
         try:
@@ -59,6 +124,14 @@ def handle_connection(camera, myqueue, sock, stopflag):
             startVideo = True
         if data == "stop_video":
             startVideo = False
+        if data == "forward":
+            drive_forward(rvr)
+        if data == "backward":
+            drive_backwards(rvr)
+        if data == "left":
+            rotate_left(rvr)
+        if data == "right":
+            rotate_right(rvr)
 
 
         if startVideo == True:
@@ -104,17 +177,17 @@ if __name__ == "__main__":
     print(f"server touple is {SOCK.getsockname()}")
     #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
+    print("camera initialized")
+    rvr = init_rvr()
+
 
     q = queue.Queue()
-
-    
-
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
 
     reciever_thread = threading.Thread(target=recv_data, args=(SOCK,q, stopflag))
-    handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag))
+    handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag, rvr))
 
     
 
@@ -130,6 +203,7 @@ if __name__ == "__main__":
     finally:
         camera.release()
         SOCK.close()
+        rvr.close()
 
 
             
