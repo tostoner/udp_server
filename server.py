@@ -79,7 +79,7 @@ def recv_data(sock,queue, stopflag):
             break
 def drive_forward(rvr):
     rvr.drive_with_heading(
-            speed=128,  # Valid speed values are 0-255
+            speed=20,  # Valid speed values are 0-255
             heading=0,  # Valid heading values are 0-359
             flags=DriveFlagsBitmask.none.value
         )
@@ -87,7 +87,7 @@ def drive_forward(rvr):
 
 def drive_backwards(rvr):
     rvr.drive_with_heading(
-            speed=128,  # Valid speed values are 0-255
+            speed=20,  # Valid speed values are 0-255
             heading=180,  # Valid heading values are 0-359
             flags=DriveFlagsBitmask.none.value
         )
@@ -95,7 +95,7 @@ def drive_backwards(rvr):
     
 def rotate_left(rvr):
     rvr.drive_with_heading(
-            speed=128,  # Valid speed values are 0-255
+            speed=20,  # Valid speed values are 0-255
             heading=270,  # Valid heading values are 0-359
             flags=DriveFlagsBitmask.none.value
         )
@@ -103,7 +103,7 @@ def rotate_left(rvr):
 
 def rotate_right(rvr):
     rvr.drive_with_heading(
-            speed=128,  # Valid speed values are 0-255
+            speed=20,  # Valid speed values are 0-255
             heading=180,  # Valid heading values are 0-359
             flags=DriveFlagsBitmask.none.value
         )
