@@ -17,6 +17,9 @@ try:
     from sphero_sdk import RvrLedGroups
     from sphero_sdk import DriveFlagsBitmask
     from sphero_sdk import DriveControlObserver
+    from sphero_sdk import LedControlObserver
+    from sphero_sdk import AsyncSpheroRvr
+
 
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
@@ -24,7 +27,7 @@ except ImportError:
 stopflag = threading.Event()
 
 def init_rvr():
-    rvr = SpheroRvrObserver()
+    rvr = AsyncSpheroRvr()
     print("robot object created")
 
     try:
