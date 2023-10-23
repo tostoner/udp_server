@@ -15,6 +15,7 @@ try:
     from sphero_sdk import RawMotorModesEnum
     from sphero_sdk import Colors
     from sphero_sdk import RvrLedGroups
+    from sphero_sdk import DriveFlagsBitmask
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
 
@@ -77,40 +78,36 @@ def recv_data(sock,queue, stopflag):
         if stopflag.is_set():
             break
 def drive_forward(rvr):
-    rvr.raw_motors(
-            left_mode=RawMotorModesEnum.forward.value,
-            left_duty_cycle=128,  # Valid duty cycle range is 0-255
-            right_mode=RawMotorModesEnum.forward.value,
-            right_duty_cycle=128  # Valid duty cycle range is 0-255
+    rvr.drive_with_heading(
+            speed=128,  # Valid speed values are 0-255
+            heading=0,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
         )
-    time.sleep(0.2)
+    time.sleep(1)
 
 def drive_backwards(rvr):
-    rvr.raw_motors(
-            left_mode=RawMotorModesEnum.backward.value,
-            left_duty_cycle=128,  # Valid duty cycle range is 0-255
-            right_mode=RawMotorModesEnum.backward.value,
-            right_duty_cycle=128  # Valid duty cycle range is 0-255
+    rvr.drive_with_heading(
+            speed=128,  # Valid speed values are 0-255
+            heading=180,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
         )
-    time.sleep(0.2)
+    time.sleep(1)
     
 def rotate_left(rvr):
-    rvr.raw_motors(
-            left_mode=RawMotorModesEnum.backward.value,
-            left_duty_cycle=128,  # Valid duty cycle range is 0-255
-            right_mode=RawMotorModesEnum.forward.value,
-            right_duty_cycle=128  # Valid duty cycle range is 0-255
+    rvr.drive_with_heading(
+            speed=128,  # Valid speed values are 0-255
+            heading=270,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
         )
-    time.sleep(0.2)
+    time.sleep(1)
 
 def rotate_right(rvr):
-    rvr.raw_motors(
-            left_mode=RawMotorModesEnum.forward.value,
-            left_duty_cycle=128,  # Valid duty cycle range is 0-255
-            right_mode=RawMotorModesEnum.backward.value,
-            right_duty_cycle=128  # Valid duty cycle range is 0-255
+    rvr.drive_with_heading(
+            speed=128,  # Valid speed values are 0-255
+            heading=180,  # Valid heading values are 0-359
+            flags=DriveFlagsBitmask.none.value
         )
-    time.sleep(0.2)
+    time.sleep(1)
 
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
