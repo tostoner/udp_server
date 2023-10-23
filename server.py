@@ -82,7 +82,7 @@ def recv_data(sock,queue, stopflag):
 
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
-    heading = rvr.get_yaw()
+    heading = 0
     
 
     while not stopflag.is_set():
