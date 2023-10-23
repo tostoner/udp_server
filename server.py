@@ -16,6 +16,8 @@ try:
     from sphero_sdk import Colors
     from sphero_sdk import RvrLedGroups
     from sphero_sdk import DriveFlagsBitmask
+    from sphero_sdk import DriveControlObserver
+
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
 
@@ -77,40 +79,10 @@ def recv_data(sock,queue, stopflag):
             break
         if stopflag.is_set():
             break
-def drive_forward(rvr):
-    rvr.drive_with_heading(
-            speed=20,  # Valid speed values are 0-255
-            heading=0,  # Valid heading values are 0-359
-            flags=DriveFlagsBitmask.none.value
-        )
-    time.sleep(1)
-
-def drive_backwards(rvr):
-    rvr.drive_with_heading(
-            speed=20,  # Valid speed values are 0-255
-            heading=180,  # Valid heading values are 0-359
-            flags=DriveFlagsBitmask.none.value
-        )
-    time.sleep(1)
-    
-def rotate_left(rvr):
-    rvr.drive_with_heading(
-            speed=20,  # Valid speed values are 0-255
-            heading=270,  # Valid heading values are 0-359
-            flags=DriveFlagsBitmask.none.value
-        )
-    time.sleep(1)
-
-def rotate_right(rvr):
-    rvr.drive_with_heading(
-            speed=20,  # Valid speed values are 0-255
-            heading=180,  # Valid heading values are 0-359
-            flags=DriveFlagsBitmask.none.value
-        )
-    time.sleep(1)
 
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
+    heading = rvr.get_yaw()
     
 
     while not stopflag.is_set():
@@ -125,13 +97,13 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         if data == "stop_video":
             startVideo = False
         if data == "forward":
-            drive_forward(rvr)
+            rvr.drive_forward_seconds(speed = 20, heading = heading, time_to_drive = 0.2)
         if data == "backward":
-            drive_backwards(rvr)
+            rvr.drive_backward_seconds(speed = 20, heading = heading , time_to_drive = 0.2)
         if data == "left":
-            rotate_left(rvr)
+            heading = heading - 5
         if data == "right":
-            rotate_right(rvr)
+            heading = heading + 5
 
 
         if startVideo == True:
