@@ -11,15 +11,22 @@ import os
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
-    from sphero_sdk import SpheroRvrObserver
-    from sphero_sdk import RawMotorModesEnum
-    from sphero_sdk import Colors
-    from sphero_sdk import RvrLedGroups
-    from sphero_sdk import DriveFlagsBitmask
-    from sphero_sdk import DriveControlObserver
-    from sphero_sdk import LedControlObserver
-    from sphero_sdk import AsyncSpheroRvr
-
+    import asyncio
+    import logging.config
+    from sphero_sdk.asyncio.config import logging_config
+    from sphero_sdk.common.log_level import LogLevel
+    from sphero_sdk.common.commands import api_and_shell
+    from sphero_sdk.common.commands import system_info
+    from sphero_sdk.common.commands import power
+    from sphero_sdk.common.commands import drive
+    from sphero_sdk.common.commands import sensor
+    from sphero_sdk.common.commands import connection
+    from sphero_sdk.common.commands import io
+    from sphero_sdk import LedControlAsync
+    from sphero_sdk import DriveControlAsync
+    from sphero_sdk import InfraredControlAsync
+    from sphero_sdk import SensorControlAsync
+    from sphero_sdk import RvrFwCheckAsync
 
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
@@ -27,14 +34,15 @@ except ImportError:
 stopflag = threading.Event()
 
 def init_rvr():
-    rvr = AsyncSpheroRvr()
+    rvr = SpheroRvrAsync()
     print("robot object created")
 
     try:
         print("waking robot")
         rvr.wake()
-        print("robot awake")
-        time.sleep(2)
+        print(f"robot awake. Battery at {rvr.get_battery_percentage()}% voltage is {rvr.get_battery_voltage_in_volts}")
+        print("getting main application version")
+        
         print("setting leds")
         rvr.set_all_leds(
             led_group=RvrLedGroups.all_lights.value,
@@ -83,10 +91,14 @@ def recv_data(sock,queue, stopflag):
         if stopflag.is_set():
             break
 
+
+
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
     heading = 0
-    
+    DRIVE_REVERSE_FLAG = 0b00000001
+    BOOST_FLAG = 0b00000010
+    FAST_TURN_MODE_FLAG = 0b00000100
 
     while not stopflag.is_set():
         try:
@@ -102,10 +114,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         if data == "forward":
             print("forward function")
             print(f"heading is {heading}")
-            rvr.drive_forward_seconds(speed = 20, heading = heading, time_to_drive = 0.2)
+            rvr.drive_with_heading(speed = 20, heading = heading, flags = 0)
         if data == "backward":
             print("backward function")
-            rvr.drive_backward_seconds(speed = 20, heading = heading , time_to_drive = 0.2)
+            rvr.drive_with_heading(speed = 20, heading = heading , flags = DRIVE_REVERSE_FLAG)
         if data == "left":
             print("left function")
             print(f"heading is {heading}")
