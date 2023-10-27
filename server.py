@@ -143,7 +143,7 @@ async def main():
     camera = await init_camera()
     print("camera initialized")
 
-    rvr = await init_rvr(asyncio.get_running_loop())
+    rvr = await init_rvr(asyncio.get_event_loop())
     await asyncio.sleep(5)
     q = asyncio.Queue()
     
