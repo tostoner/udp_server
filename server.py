@@ -13,7 +13,6 @@ try:
     import asyncio
     import logging.config
 
-    from sphero_sdk.asyncio.client.toys.sphero_rvr_async import SpheroRvrAsync
     from sphero_sdk import SpheroRvrAsync
     from sphero_sdk import SerialAsyncDal
 
