@@ -20,13 +20,8 @@ try:
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
 
-stopflag = threading.Event()
-loop = asyncio.get_event_loop()
 
-async def init_rvr():
-    rvr = SpheroRvrAsync(dal=SerialAsyncDal(asyncio.get_running_loop()))
-    print("robot object created")
-
+async def init_rvr(rvr):
     try:
         print("waking robot")
         await rvr.wake()
@@ -71,7 +66,7 @@ async def capture_and_compress(camera):
         return None
 
 async def recv_data(sock, queue, stopflag):
-    while not stopflag.is_set():
+    while not stopflag:
         try:
             data, addr = sock.recvfrom(4096)
             data = data.decode("utf-8")
@@ -88,7 +83,7 @@ async def handle_connection(camera, queue, sock, stopflag, rvr):
     BOOST_FLAG = 0b00000010
     FAST_TURN_MODE_FLAG = 0b00000100
 
-    while not stopflag.is_set():
+    while not stopflag:
         try:
             data, addr = await queue.get()
             print(f"received from client: {data}")
@@ -142,8 +137,13 @@ async def main():
     print(f"server tuple is {SOCK.getsockname()}")
     camera = await init_camera()
     print("camera initialized")
+    
+    loop = asyncio.get_event_loop()
+    stopflag = False
+    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+    print("robot object created")
 
-    rvr = await init_rvr()
+    rvr = await init_rvr(rvr)
     await asyncio.sleep(5)
     q = asyncio.Queue()
     
@@ -153,7 +153,7 @@ async def main():
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
-    stopflag.set()
+    stopflag = True
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
