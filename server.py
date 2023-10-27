@@ -166,6 +166,7 @@ def signal_handler(sig, frame):
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+    asyncio.sleep(1)
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     try:
