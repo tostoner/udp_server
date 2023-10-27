@@ -35,7 +35,8 @@ except ImportError:
 stopflag = threading.Event()
 
 def init_rvr():
-    rvr = SpheroRvrAsync()
+    fwCheck = RvrFwCheckAsync()
+    rvr = SpheroRvrAsync(fwCheck)
     print("robot object created")
 
     try:
