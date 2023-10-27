@@ -4,7 +4,6 @@ import socket
 import signal
 import sys
 import os
-from functools import partial
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
@@ -129,50 +128,31 @@ async def start_server(ip, port):
     print("Server started")
     return sock
 
-async def shutdown(signal, loop):
-    """Cleanup tasks tied to the service's shutdown."""
-    print(f"Received exit signal {signal.name}...")
-    print("Closing database connections")
-    # close your database connections here
-    print("Nacking outstanding messages")
-    # nacking outstanding messages here
-    tasks = [t for t in asyncio.all_tasks() if t is not
-             asyncio.current_task()]
-    [task.cancel() for task in tasks]
-    print("Cancelling outstanding tasks")
-    await asyncio.gather(*tasks, return_exceptions=True)
-    loop.stop()
-
-async def main():
+async def main(rvr):
+    loop = asyncio.get_event_loop()
     SOCK = await start_server("10.25.46.172", 12395)
     print(f"server tuple is {SOCK.getsockname()}")
     camera = await init_camera()
     print("camera initialized")
-
-    stopflag = False
     
-    loop = asyncio.get_event_loop()
+    stopflag = False
     loop.set_debug(True)
-
-    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
-    signal.signal(signal.SIGINT, partial(shutdown, loop=loop))
-    signal.signal(signal.SIGTERM, partial(shutdown, loop=loop))
     print("robot object created")
 
-    #rvr = await init_rvr(rvr)
-    #await asyncio.sleep(5)
-    #q = asyncio.Queue()
-    
-    #reciever_task = asyncio.create_task(recv_data(SOCK, q, stopflag))
-    #handler_task = asyncio.create_task(handle_inputs(camera, q, SOCK, stopflag, rvr))
-    #await asyncio.gather(reciever_task, handler_task)
+    rvr = await init_rvr(rvr)
+    await asyncio.sleep(5)
+    q = asyncio.Queue()
+
+    reciever_task = asyncio.create_task(recv_data(SOCK, q, stopflag))
+    handler_task = asyncio.create_task(handle_inputs(camera, q, SOCK, stopflag, rvr))
+    await asyncio.gather(reciever_task, handler_task)
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
-    stopflag = True
 
 if __name__ == "__main__":
-    rvr = SpheroRvrAsync(dal=SerialAsyncDal())
+    loop = asyncio.get_event_loop()
+    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     try:
