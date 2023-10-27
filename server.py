@@ -129,8 +129,8 @@ async def start_server(ip, port):
     return sock
 
 async def main():
-    #SOCK = await start_server("10.25.46.172", 12395)
-    #print(f"server tuple is {SOCK.getsockname()}")
+    SOCK = await start_server("10.25.46.172", 12395)
+    print(f"server tuple is {SOCK.getsockname()}")
     camera = await init_camera()
     print("camera initialized")
 
