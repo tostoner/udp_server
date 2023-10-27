@@ -4,6 +4,7 @@ import socket
 import signal
 import sys
 import os
+from functools import partial
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
@@ -128,6 +129,20 @@ async def start_server(ip, port):
     print("Server started")
     return sock
 
+async def shutdown(signal, loop):
+    """Cleanup tasks tied to the service's shutdown."""
+    print(f"Received exit signal {signal.name}...")
+    print("Closing database connections")
+    # close your database connections here
+    print("Nacking outstanding messages")
+    # nacking outstanding messages here
+    tasks = [t for t in asyncio.all_tasks() if t is not
+             asyncio.current_task()]
+    [task.cancel() for task in tasks]
+    print("Cancelling outstanding tasks")
+    await asyncio.gather(*tasks, return_exceptions=True)
+    loop.stop()
+
 async def main():
     SOCK = await start_server("10.25.46.172", 12395)
     print(f"server tuple is {SOCK.getsockname()}")
@@ -137,7 +152,11 @@ async def main():
     stopflag = False
     
     loop = asyncio.get_event_loop()
+    loop.set_debug(True)
+
     rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+    signal.signal(signal.SIGINT, partial(shutdown, loop=loop))
+    signal.signal(signal.SIGTERM, partial(shutdown, loop=loop))
     print("robot object created")
 
     #rvr = await init_rvr(rvr)
@@ -153,6 +172,11 @@ def signal_handler(sig, frame):
     stopflag = True
 
 if __name__ == "__main__":
+    rvr = SpheroRvrAsync(dal=SerialAsyncDal())
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    asyncio.run(main())
+    try:
+        asyncio.run(main(rvr))
+    finally:
+        loop.close()
+        print("loop closed")
