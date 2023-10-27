@@ -165,8 +165,11 @@ def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
 
 if __name__ == "__main__":
+    print("main function started")
     loop = asyncio.get_event_loop()
+    print("loop created")
     rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+    print("Robot object created")
     asyncio.sleep(1)
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
