@@ -142,8 +142,11 @@ async def main():
     print(f"server tuple is {SOCK.getsockname()}")
     camera = await init_camera()
     print("camera initialized")
+
     rvr = await init_rvr(asyncio.get_running_loop())
+    await asyncio.sleep(5)
     q = asyncio.Queue()
+    
     reciever_task = asyncio.create_task(recv_data(SOCK, q, stopflag))
     handler_task = asyncio.create_task(handle_connection(camera, q, SOCK, stopflag, rvr))
     await asyncio.gather(reciever_task, handler_task)
