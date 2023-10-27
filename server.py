@@ -1,9 +1,6 @@
 import cv2
 import numpy as np
 import socket
-import threading
-import queue
-import time
 import signal
 import sys
 import os
@@ -11,8 +8,6 @@ import os
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
     import asyncio
-    import logging.config
-
     from sphero_sdk import SpheroRvrAsync
     from sphero_sdk import SerialAsyncDal
 
@@ -24,6 +19,7 @@ async def init_rvr(rvr):
     try:
         print("waking robot")
         await rvr.wake()
+        await asyncio.sleep(2)
         print("robot awake. Getting battery percentage")
         battery_percentage = await rvr.get_battery_percentage()
         print(f"Battery at {battery_percentage}%")
@@ -75,7 +71,8 @@ async def recv_data(sock, queue, stopflag):
             print(f"Socket error: {str(e)}")
             break
 
-async def handle_connection(camera, queue, sock, stopflag, rvr):
+
+async def handle_inputs(camera, queue, sock, stopflag, rvr):
     startVideo = False
     heading = 0
     DRIVE_REVERSE_FLAG = 0b00000001
@@ -132,23 +129,24 @@ async def start_server(ip, port):
     return sock
 
 async def main():
-    SOCK = await start_server("10.25.46.172", 12395)
-    print(f"server tuple is {SOCK.getsockname()}")
+    #SOCK = await start_server("10.25.46.172", 12395)
+    #print(f"server tuple is {SOCK.getsockname()}")
     camera = await init_camera()
     print("camera initialized")
+
+    stopflag = False
     
     loop = asyncio.get_event_loop()
-    stopflag = False
     rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
     print("robot object created")
 
-    rvr = await init_rvr(rvr)
-    await asyncio.sleep(5)
-    q = asyncio.Queue()
+    #rvr = await init_rvr(rvr)
+    #await asyncio.sleep(5)
+    #q = asyncio.Queue()
     
-    reciever_task = asyncio.create_task(recv_data(SOCK, q, stopflag))
-    handler_task = asyncio.create_task(handle_connection(camera, q, SOCK, stopflag, rvr))
-    await asyncio.gather(reciever_task, handler_task)
+    #reciever_task = asyncio.create_task(recv_data(SOCK, q, stopflag))
+    #handler_task = asyncio.create_task(handle_inputs(camera, q, SOCK, stopflag, rvr))
+    #await asyncio.gather(reciever_task, handler_task)
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
