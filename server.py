@@ -110,6 +110,10 @@ async def start_server(ip, port):
 
 async def main(rvr):
     print("main function started")
+
+    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+    print("Robot object created")
+    asyncio.sleep(1)
     print("loop created")
     SOCK = await start_server("10.25.46.172", 12395)
     print(f"server tuple is {SOCK.getsockname()}")
@@ -168,9 +172,7 @@ if __name__ == "__main__":
     print("main function started")
     loop = asyncio.get_event_loop()
     print("loop created")
-    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
-    print("Robot object created")
-    asyncio.sleep(1)
+    
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     try:
