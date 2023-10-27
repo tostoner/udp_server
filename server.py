@@ -23,8 +23,8 @@ except ImportError:
 stopflag = threading.Event()
 loop = asyncio.get_event_loop()
 
-async def init_rvr(loop):
-    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+async def init_rvr():
+    rvr = SpheroRvrAsync(dal=SerialAsyncDal(asyncio.get_running_loop()))
     print("robot object created")
 
     try:
@@ -143,7 +143,7 @@ async def main():
     camera = await init_camera()
     print("camera initialized")
 
-    rvr = await init_rvr(asyncio.get_event_loop())
+    rvr = await init_rvr()
     await asyncio.sleep(5)
     q = asyncio.Queue()
     
