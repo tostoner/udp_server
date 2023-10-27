@@ -15,29 +15,41 @@ except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
 
 
-async def init_rvr(rvr):
+async def init_rvr(loop):
+    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+    print("Robot object created")
+
     try:
-        print("waking robot")
+        print("Waking robot")
         await rvr.wake()
-        await asyncio.sleep(2)
-        print("robot awake. Getting battery percentage")
-        battery_percentage = await rvr.get_battery_percentage()
+        print("Robot awake. Getting battery percentage")
+
+        # Extend the timeout for debugging purposes
+        battery_percentage = await rvr.get_battery_percentage(timeout=10)
         print(f"Battery at {battery_percentage}%")
+
         voltage = await rvr.get_battery_voltage_in_volts()
         print(f"Voltage is {voltage}")
-        print("getting main application version") 
-        print("setting leds")
+
+        print("Getting main application version") 
+        main_app_version = await rvr.get_main_application_version(timeout=10)
+        print(f"Main application version: {main_app_version}")
+
+        print("Setting LEDs")
         await rvr.set_all_leds(
             led_group=RvrLedGroups.all_lights.value,
             led_brightness_values=[color for _ in range(10) for color in [0, 255, 0]]
         )
-        print("leds set")
+        print("LEDs set")
+
         await rvr.reset_yaw()
-        print("yaw reset")
+        print("Yaw reset")
+
         print("RVR initialized")
     except Exception as e:
         print(f"Error initializing RVR: {e}")
     return rvr
+
 
 async def init_camera():
     camera = cv2.VideoCapture(0)
