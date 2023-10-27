@@ -141,7 +141,8 @@ async def start_server(ip, port):
     return sock
 
 async def main(rvr):
-    loop = asyncio.get_event_loop()
+    print("main function started")
+    print("loop created")
     SOCK = await start_server("10.25.46.172", 12395)
     print(f"server tuple is {SOCK.getsockname()}")
     camera = await init_camera()
