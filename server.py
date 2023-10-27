@@ -27,6 +27,7 @@ try:
     from sphero_sdk import InfraredControlAsync
     from sphero_sdk import SensorControlAsync
     from sphero_sdk import RvrFwCheckAsync
+    from sphero_sdk.asyncio.client.toys.sphero_rvr_async import SpheroRvrAsync
 
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
