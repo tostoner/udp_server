@@ -8,8 +8,11 @@ import os
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
     import asyncio
+    from sphero_sdk import SpheroRvrTargets
     from sphero_sdk import SpheroRvrAsync
     from sphero_sdk import SerialAsyncDal
+    from sphero_sdk import CmsFwCheckBase
+    from sphero_sdk import RvrFwCheckAsync
 
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
@@ -108,10 +111,10 @@ async def start_server(ip, port):
     print("Server started")
     return sock
 
-async def main(rvr):
+async def main():
     print("main function started")
 
-    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
+    rvr = SpheroRvrAsync(fwCheck = RvrFwCheckAsync(fWCheckBase = CmsFwCheckBase()))
     print("Robot object created")
     asyncio.sleep(1)
     print("loop created")
@@ -157,7 +160,6 @@ async def main(rvr):
     loop.set_debug(True)
     print("robot object created")
 
-    rvr = await init_rvr(rvr)
     await asyncio.sleep(5)
     q = asyncio.Queue()
 
@@ -176,7 +178,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     try:
-        asyncio.run(main(rvr))
+        asyncio.run(main())
     finally:
         loop.close()
         print("loop closed")
