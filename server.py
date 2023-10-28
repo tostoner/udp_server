@@ -11,8 +11,16 @@ try:
     from sphero_sdk import SpheroRvrTargets
     from sphero_sdk import SpheroRvrAsync
     from sphero_sdk import SerialAsyncDal
-    from sphero_sdk import CmsFwCheckBase
     from sphero_sdk import RvrFwCheckAsync
+    from sphero_sdk import LedControlAsync
+    from sphero_sdk import DriveControlAsync
+    from sphero_sdk import InfraredControlAsync
+    from sphero_sdk import SensorControlAsync
+    import os
+    import logging
+    from sphero_sdk import SpheroRvrTargets
+    from sphero_sdk.common.firmware.cms_fw_check_base import CmsFwCheckBase
+
 
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
@@ -114,7 +122,8 @@ async def start_server(ip, port):
 async def main():
     print("main function started")
 
-    rvr = SpheroRvrAsync(fwCheck = RvrFwCheckAsync(fWCheckBase = CmsFwCheckBase()))
+    rvr = SpheroRvrAsync(fwCheck=RvrFwCheckAsync(fwCheckBase=CmsFwCheckBase()))
+
     print("Robot object created")
     asyncio.sleep(1)
     print("loop created")
