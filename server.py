@@ -122,10 +122,7 @@ async def start_server(ip, port):
 async def main():
     print("main function started")
 
-    loop = asyncio.get_event_loop()
-    dal = SerialAsyncDal(loop)
-    rvr = SpheroRvrAsync(dal=dal)
-    print("Robot object created")
+
 
 
     print("Robot object created")
@@ -183,8 +180,15 @@ def signal_handler(sig, frame):
 
 if __name__ == "__main__":
     print("main function started")
+    loop = asyncio.get_event_loop()
     print("loop created")
+
+    dal = SerialAsyncDal(loop)
+    print("dal created")
     
+    rvr = SpheroRvrAsync(dal=dal)
+    print("Robot object created")
+
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     asyncio.run(main())
