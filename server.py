@@ -122,18 +122,20 @@ async def start_server(ip, port):
 async def main():
     print("main function started")
 
-    rvr = SpheroRvrAsync(fwCheck=RvrFwCheckAsync(fwCheckBase=CmsFwCheckBase()))
+    loop = asyncio.get_event_loop()
+    dal = SerialAsyncDal(loop)
+    rvr = SpheroRvrAsync(dal=dal)
+    print("Robot object created")
+
 
     print("Robot object created")
-    asyncio.sleep(1)
+    await asyncio.sleep(1)
     print("loop created")
     SOCK = await start_server("10.25.46.172", 12395)
     print(f"server tuple is {SOCK.getsockname()}")
     camera = await init_camera()
 
     print("camera initialized")
-    rvr = SpheroRvrAsync(dal=SerialAsyncDal(loop))
-    print("Robot object created")
 
     try:
         print("Waking robot")
@@ -181,13 +183,8 @@ def signal_handler(sig, frame):
 
 if __name__ == "__main__":
     print("main function started")
-    loop = asyncio.get_event_loop()
     print("loop created")
     
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    try:
-        asyncio.run(main())
-    finally:
-        loop.close()
-        print("loop closed")
+    asyncio.run(main())
