@@ -119,7 +119,7 @@ async def start_server(ip, port):
     print("Server started")
     return sock
 
-async def main():
+async def main(rvr):
     print("main function started")
 
 
@@ -165,7 +165,6 @@ async def main():
         print(f"Error initializing RVR: {e}")
     
     stopflag = False
-    loop.set_debug(True)
     print("robot object created")
 
     await asyncio.sleep(5)
@@ -181,6 +180,8 @@ def signal_handler(sig, frame):
 if __name__ == "__main__":
     print("main function started")
     loop = asyncio.get_event_loop()
+    loop.set_debug(True)
+
     print("loop created")
 
     dal = SerialAsyncDal(loop)
@@ -191,4 +192,4 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    asyncio.run(main())
+    asyncio.run(main(rvr))
