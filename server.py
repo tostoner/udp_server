@@ -40,6 +40,8 @@ def init_rvr():
         print("leds set")
         rvr.reset_yaw()
         print("yaw reset")
+        print(f"battery volate: {rvr.get_battery_percentage()}")
+        
         print("RVR initialized")
     except Exception as e:
         print(f"Error initializing RVR: {e}")
