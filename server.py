@@ -42,7 +42,7 @@ def init_rvr():
         print("yaw reset")
         def battery_percentage_handler(percentage):
             print(f"Battery Percentage: {percentage}%")
-            
+
         rvr.get_battery_percentage(battery_percentage_handler, timeout=10)
 
 
@@ -146,6 +146,7 @@ def send_frame(sock, frame, client):
 
 def start_server(ip, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
     sock.bind((ip, port))
     print("Server started")
     return sock
