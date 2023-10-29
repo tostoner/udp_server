@@ -42,8 +42,9 @@ def init_rvr():
         print("yaw reset")
         def battery_percentage_handler(percentage):
             print(f"Battery Percentage: {percentage}%")
-
+        print("getting battery percentage")
         rvr.get_battery_percentage(battery_percentage_handler, timeout=10)
+        
 
 
         print("RVR initialized")
