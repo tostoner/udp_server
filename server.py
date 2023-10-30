@@ -112,10 +112,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
         if data == "left":
             heading = (heading - 5) % 360
-            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.none.value)
+            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.fast_turn.value)
         if data == "right":
             heading = (heading + 5) % 360
-            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.none.value)
+            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.fast_turn.value)
 
 
         print(f" heading is {heading}")
