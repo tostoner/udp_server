@@ -44,9 +44,6 @@ def init_rvr():
             print(f"Battery Percentage: {percentage}%")
         print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=10)}%")
 
-        
-
-
         print("RVR initialized")
     except Exception as e:
         print(f"Error initializing RVR: {e}")
@@ -105,10 +102,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             startVideo = False
         if data == "forward":
             print("forward function")
-            rvr.drive_forward_seconds(speed = 20, heading = heading, time_to_drive = 0.2)
+            rvr.drive_with_heading(speed = 20, heading = heading)
         if data == "backward":
             print("backward function")
-            rvr.drive_backward_seconds(speed = 20, heading = heading , time_to_drive = 0.2)
+            rvr.drive_with_heading(speed = 20, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
         if data == "left":
             heading = heading - 5
         if data == "right":
