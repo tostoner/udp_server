@@ -42,8 +42,8 @@ def init_rvr():
         print("yaw reset")
         def battery_percentage_handler(percentage):
             print(f"Battery Percentage: {percentage}%")
-        print("getting battery percentage")
-        rvr.get_battery_percentage(battery_percentage_handler, timeout=10)
+        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=10)}%")
+
         
 
 
@@ -110,7 +110,6 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             print("backward function")
             rvr.drive_backward_seconds(speed = 20, heading = heading , time_to_drive = 0.2)
         if data == "left":
-
             heading = heading - 5
         if data == "right":
             heading = heading + 5
