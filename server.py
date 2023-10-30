@@ -160,7 +160,7 @@ if __name__ == "__main__":
     camera = init_camera()
     print("camera initialized")
     rvr = init_rvr()
-
+#e
 
     q = queue.Queue()
     signal.signal(signal.SIGINT, signal_handler)
