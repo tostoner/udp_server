@@ -127,8 +127,6 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             if not compressed_frame:
                 print("Error capturing frame")
         
-
-                
         else:
             if data is not None:
                 print(f"recieved from client: {data}")
@@ -170,7 +168,7 @@ if __name__ == "__main__":
     camera = init_camera()
     print("camera initialized")
     rvr = init_rvr()
-#e
+
 
     q = queue.Queue()
     signal.signal(signal.SIGINT, signal_handler)
