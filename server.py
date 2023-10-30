@@ -102,7 +102,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             startVideo = False
         if data == "forward":
             print("forward function")
-            rvr.drive_with_heading(speed = 20, heading = heading)
+            rvr.drive_with_heading(speed = 20, heading = heading, flags=DriveFlagsBitmask.none.value)
         if data == "backward":
             print("backward function")
             rvr.drive_with_heading(speed = 20, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
