@@ -87,6 +87,7 @@ def recv_data(sock,queue, stopflag):
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
     heading = 0
+    speedInput = 0
     
 
     while not stopflag.is_set():
@@ -98,20 +99,23 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
 
         if data == "video":
             startVideo = True
+        if data == "gas":
+            print(" recieved gas")
+            speedInput = 20
         if data == "stop_video":
             startVideo = False
         if data == "forward":
             print("forward function")
-            rvr.drive_with_heading(speed = 20, heading = heading, flags=DriveFlagsBitmask.none.value)
+            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
         if data == "backward":
             print("backward function")
-            rvr.drive_with_heading(speed = 20, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
+            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
         if data == "left":
             heading = (heading - 5) % 360
-            rvr.drive_with_heading(speed = 0, heading = heading , flags=DriveFlagsBitmask.none.value)
+            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.none.value)
         if data == "right":
             heading = (heading + 5) % 360
-            rvr.drive_with_heading(speed = 0, heading = heading , flags=DriveFlagsBitmask.none.value)
+            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.none.value)
 
 
         print(f" heading is {heading}")
@@ -149,10 +153,14 @@ def start_server(ip, port):
     sock.bind((ip, port))
     print("Server started")
     return sock
-
+def cleanup(camera, SOCK, rvr):
+    camera.release()
+    SOCK.close()
+    rvr.close()
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
     stopflag.set()
+
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
@@ -183,8 +191,6 @@ if __name__ == "__main__":
         handler_thread.join()
     except KeyboardInterrupt:
         print("Keyboard interrupt") #SIGNALS VIRKA IKKJE PÅ WINDOWS :( KANSKJE PÅ RASPI? :)
+        signal_handler()
     finally:
-        camera.release()
-        SOCK.close()
-        rvr.close()
-
+        cleanup(camera, SOCK, rvr)
