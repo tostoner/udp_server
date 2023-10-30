@@ -107,9 +107,11 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             print("backward function")
             rvr.drive_with_heading(speed = 20, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
         if data == "left":
-            heading = heading - 5
+            heading = (heading - 5) % 360
+            rvr.drive_with_heading(speed = 0, heading = heading , flags=DriveFlagsBitmask.none.value)
         if data == "right":
-            heading = heading + 5
+            heading = (heading + 5) % 360
+            rvr.drive_with_heading(speed = 0, heading = heading , flags=DriveFlagsBitmask.none.value)
 
 
         print(f" heading is {heading}")
