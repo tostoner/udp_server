@@ -92,7 +92,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
 
     while not stopflag.is_set():
         try:
-            data,addr = myqueue.get(timeout=1)
+            data,addr = myqueue.get(timeout=5)
         except queue.Empty:
             print("Queue empty")
             data = "no input"
@@ -153,6 +153,7 @@ def cleanup(camera, SOCK, rvr):
     camera.release()
     SOCK.close()
     rvr.close()
+
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
     stopflag.set()
@@ -181,12 +182,10 @@ if __name__ == "__main__":
     try:
         reciever_thread.start()
         handler_thread.start()
-
-
-        reciever_thread.join()
-        handler_thread.join()
     except KeyboardInterrupt:
         print("Keyboard interrupt") #SIGNALS VIRKA IKKJE PÅ WINDOWS :( KANSKJE PÅ RASPI? :)
         signal_handler()
     finally:
+        reciever_thread.join()
+        handler_thread.join()
         cleanup(camera, SOCK, rvr)
