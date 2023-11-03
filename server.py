@@ -31,7 +31,7 @@ def init_rvr():
         print("waking robot")
         rvr.wake()
         print("robot awake")
-        time.sleep(2)
+        time.sleep(1)
         print("setting leds")
         rvr.set_all_leds(
             led_group=RvrLedGroups.all_lights.value,
@@ -89,10 +89,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
     heading = 0
     speedInput = 0
     
-
     while not stopflag.is_set():
+        time.sleep(0.01)
         try:
-            data,addr = myqueue.get(timeout=5)
+            data,addr = myqueue.get(block=False)
         except queue.Empty:
             print("Queue empty")
             data = "no input"
@@ -114,8 +114,6 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             heading = (heading - 5) % 360
         if data == "right":
             heading = (heading + 5) % 360
-
-
         print(f" heading is {heading}")
 
         if startVideo == True:
