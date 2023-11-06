@@ -93,21 +93,19 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         time.sleep(0.01)
         try:
             data,addr = myqueue.get(block=False)
-    
+
         except queue.Empty:
             print("Queue empty")
             data = "no input"
 
         parts = data.split(",", 1)
         if len(parts) > 1:
-            value = parts[1]
             try:
-                data = int(parts[1])
+                value = int(parts[1])
+                data = parts[0]
             except:
                 print("error value converting to int")
                 continue
-        else:
-            data = parts[0]
 
         if data == "video":
             startVideo = True
