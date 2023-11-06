@@ -88,31 +88,45 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
     heading = 0
     speedInput = 0
-    
+
     while not stopflag.is_set():
         time.sleep(0.01)
         try:
             data,addr = myqueue.get(block=False)
+    
         except queue.Empty:
             print("Queue empty")
             data = "no input"
 
+        parts = data.split(",", 1)
+        if len(parts) > 1:
+            value = parts[1]
+            try:
+                data = int(parts[1])
+            except:
+                print("error value converting to int")
+                continue
+        else:
+            data = parts[0]
+
         if data == "video":
             startVideo = True
-        if data == "gas":
+        elif data == "+":
             print(" recieved gas")
-            speedInput = 20
-        if data == "stop_video":
+            speedInput = speedInput + value
+        elif data == "-":
+            speedInput = speedInput - value
+        elif data == "stop_video":
             startVideo = False
-        if data == "forward":
+        elif data == "forward":
             print("forward function")
             rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
-        if data == "backward":
+        elif data == "backward":
             print("backward function")
             rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
-        if data == "left":
+        elif data == "left":
             heading = (heading - 5) % 360
-        if data == "right":
+        elif data == "right":
             heading = (heading + 5) % 360
         print(f" heading is {heading}")
 
@@ -128,7 +142,6 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
                 print(f"recieved from client: {data}")
         if stopflag.is_set():
             break
-
 
 def send_frame(sock, frame, client):
     try:
@@ -174,8 +187,6 @@ if __name__ == "__main__":
 
     reciever_thread = threading.Thread(target=recv_data, args=(SOCK,q, stopflag))
     handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag, rvr))
-
-    
 
     try:
         reciever_thread.start()
