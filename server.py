@@ -113,12 +113,14 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             print("Error: Incorrect data format. Expected 'message,speed,heading'")
 
 
-            if data == "video":
-                startVideo = True
-            elif data == "stop_video":
-                startVideo = False
-            elif data == "drive":
-                rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
+        if data == "video":
+            startVideo = True
+        elif data == "stop_video":
+            startVideo = False
+        elif data == "drive":
+            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
+        elif data == "drive_reverse":
+            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.reverse.value)
 
 
         if startVideo == True:
