@@ -128,8 +128,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
         elif data == "left":
             heading = (heading - 5) % 360
+            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
         elif data == "right":
             heading = (heading + 5) % 360
+            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
         print(f" heading is {heading}")
 
         if startVideo == True:
