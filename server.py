@@ -98,41 +98,28 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             print("Queue empty")
             data = "no input"
 
-        parts = data.split(",", 1)
-        if len(parts) > 1:
-            try:
-                value = int(parts[1])
-                data = parts[0]
-            except:
-                print("error value converting to int")
-                continue
+        data = "message,100,270"  # Example input format
 
-        if data == "video":
-            startVideo = True
-        elif data == "+":
-            print(" recieved gas")
-            speedInput = speedInput + value
-            if speed > 255:
-                speed = 255
-        elif data == "-":
-            speedInput = speedInput - value
-            if speed < 0:
-                speed = 0
-        elif data == "stop_video":
-            startVideo = False
-        elif data == "forward":
-            print("forward function")
-            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
-        elif data == "backward":
-            print("backward function")
-            rvr.drive_with_heading(speed = speedInput, heading = heading , flags=DriveFlagsBitmask.drive_reverse.value)
-        elif data == "left":
-            heading = (heading - 5) % 360
-            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
-        elif data == "right":
-            heading = (heading + 5) % 360
-            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
-        print(f" heading is {heading}")
+        parts = data.split(",", 2)  # Split into three parts: message, speed, and heading
+        if len(parts) == 3:  # Ensure that there are exactly three parts
+            message = parts[0]
+            try:
+                speedInput = int(parts[1])
+                headingInput = int(parts[2])
+                print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
+            except ValueError:
+                print("Error: Value converting to int")
+        else:
+            print("Error: Incorrect data format. Expected 'message,speed,heading'")
+
+
+            if data == "video":
+                startVideo = True
+            elif data == "stop_video":
+                startVideo = False
+            elif data == "drive":
+                rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
+
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
