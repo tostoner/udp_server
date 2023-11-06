@@ -112,8 +112,12 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         elif data == "+":
             print(" recieved gas")
             speedInput = speedInput + value
+            if speed > 255:
+                speed = 255
         elif data == "-":
             speedInput = speedInput - value
+            if speed < 0:
+                speed = 0
         elif data == "stop_video":
             startVideo = False
         elif data == "forward":
