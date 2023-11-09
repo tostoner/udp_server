@@ -95,7 +95,8 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
     speedInput = 0
 
     while not stopflag.is_set():
-        time.sleep(0.01)
+        time.sleep(1/60)
+        message = None
         try:
             data,addr = myqueue.get(block=False)
 
@@ -121,11 +122,11 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         elif message == "stop_video":
             startVideo = False
         elif message == "drive":
-            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
+            rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.none.value)
         elif message == "drive_reverse":
-            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.drive_reverse.value)
+            rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
         elif message =="dont_drive":
-            rvr.drive_with_heading(speed = 0, heading = heading, flags=DriveFlagsBitmask.none.value)
+            rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
@@ -135,8 +136,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             if not compressed_frame:
                 print("Error capturing frame")
 
+
         if stopflag.is_set():
             break
+        
 
 def send_frame(sock, frame, client):
     try:
