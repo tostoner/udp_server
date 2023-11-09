@@ -98,8 +98,6 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             print("Queue empty")
             data = "no input"
 
-        data = "message,100,270"  # Example input format
-
         parts = data.split(",", 2)  # Split into three parts: message, speed, and heading
         if len(parts) == 3:  # Ensure that there are exactly three parts
             message = parts[0]
@@ -111,7 +109,6 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
                 print("Error: Value converting to int")
         else:
             print("Error: Incorrect data format. Expected 'message,speed,heading'")
-
 
             if data == "video":
                 startVideo = True
@@ -156,25 +153,25 @@ def cleanup(camera, SOCK, rvr):
     SOCK.close()
     rvr.close()
 
-def signal_handler(sig, frame):
+def signal_handler(_):
     print('You pressed Ctrl+C!')
     stopflag.set()
+    cleanup(camera, SOCK, rvr)
+    reciever_thread.join()
+    handler_thread.join()
 
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
     SOCK = start_server("10.25.46.172", 12395)
     print(f"server touple is {SOCK.getsockname()}")
-    #sock = start_server("10.25.46.172", 12395)#må ditte være samme som raspi eller kan den være random?
     camera = init_camera()
     print("camera initialized")
     rvr = init_rvr()
 
-
     q = queue.Queue()
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-
 
     reciever_thread = threading.Thread(target=recv_data, args=(SOCK,q, stopflag))
     handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag, rvr))
@@ -183,8 +180,7 @@ if __name__ == "__main__":
         reciever_thread.start()
         handler_thread.start()
     except KeyboardInterrupt:
-        print("Keyboard interrupt") #SIGNALS VIRKA IKKJE PÅ WINDOWS :( KANSKJE PÅ RASPI? :)
-        signal_handler()
+        print("Keyboard interrupt")
     finally:
         reciever_thread.join()
         handler_thread.join()
