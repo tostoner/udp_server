@@ -124,7 +124,8 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
         elif message == "drive_reverse":
             rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.drive_reverse.value)
-
+        elif message =="dont_drive":
+            rvr.drive_with_heading(speed = 0, heading = heading, flags=DriveFlagsBitmask.none.value)
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
