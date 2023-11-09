@@ -77,7 +77,12 @@ def recv_data(sock,queue, stopflag):
             data,addr = sock.recvfrom(4096)
             data = data.decode("utf-8")
             print(f"data recieved {data}")
+            if queue.qsize() >= 5:
+                # This will remove the oldest item from the queue
+                queue.get_nowait()
+            
             queue.put((data, addr))
+            
         except OSError as e:
             print(f"Socket error: {str(e)}")
             break
@@ -118,12 +123,13 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         elif message == "drive":
             rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
         elif message == "drive_reverse":
-            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.reverse.value)
+            rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.drive_reverse.value)
 
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
             if compressed_frame:#Kan bytte til switch case fordi det er rasksare
+                print("sending frame")
                 send_frame(sock, compressed_frame, addr)
             if not compressed_frame:
                 print("Error capturing frame")
