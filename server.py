@@ -99,8 +99,8 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             data = "no input"
 
         parts = data.split(",", 2)  # Split into three parts: message, speed, and heading
+        message = parts[0]
         if len(parts) == 3:  # Ensure that there are exactly three parts
-            message = parts[0]
             try:
                 speedInput = int(parts[1])
                 headingInput = int(parts[2])
@@ -111,13 +111,13 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             print("Error: Incorrect data format. Expected 'message,speed,heading'")
 
 
-        if data == "video":
+        if message == "video":
             startVideo = True
-        elif data == "stop_video":
+        elif message == "stop_video":
             startVideo = False
-        elif data == "drive":
+        elif message == "drive":
             rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.none.value)
-        elif data == "drive_reverse":
+        elif message == "drive_reverse":
             rvr.drive_with_heading(speed = speedInput, heading = heading, flags=DriveFlagsBitmask.reverse.value)
 
 
@@ -127,10 +127,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
                 send_frame(sock, compressed_frame, addr)
             if not compressed_frame:
                 print("Error capturing frame")
-        
-        else:
-            if data is not None:
-                print(f"recieved from client: {data}")
+
         if stopflag.is_set():
             break
 
