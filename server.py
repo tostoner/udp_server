@@ -8,7 +8,7 @@ import time
 import signal
 import sys
 import os
-
+#ddd
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
     from sphero_sdk import SpheroRvrObserver
