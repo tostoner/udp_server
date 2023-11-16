@@ -7,8 +7,9 @@ import queue
 import time
 import signal
 import sys
+import json
 import os
-#ddd
+jsonFile = '{"speed": 0, "heading": 0, "message": "video", "frame": 0"}'
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
     from sphero_sdk import SpheroRvrObserver
@@ -71,17 +72,20 @@ def capture_and_compress(camera):
         return None
     
 def recv_data(sock,queue, stopflag):
-
     while not stopflag.is_set():
         try:
             data,addr = sock.recvfrom(4096)
             data = data.decode("utf-8")
             print(f"data recieved {data}")
-            if queue.qsize() >= 5:
-                # This will remove the oldest item from the queue
-                queue.get_nowait()
-            
-            queue.put((data, addr))
+            try: 
+                json_data = json.loads(data)
+                if queue.qsize() >= 5:
+                    # This will remove the oldest item from the queue
+                    queue.get_nowait()
+                
+                queue.put((json_data, addr))
+            except ValueError:
+                print("Error: Value converting to json")
             
         except OSError as e:
             print(f"Socket error: {str(e)}")
@@ -102,19 +106,12 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
 
         except queue.Empty:
             print("Queue empty")
-            data = "no input"
+            data = {"message": "no input"}
 
-        parts = data.split(",", 2)  # Split into three parts: message, speed, and heading
-        message = parts[0]
-        if len(parts) == 3:  # Ensure that there are exactly three parts
-            try:
-                speedInput = int(parts[1])
-                headingInput = int(parts[2])
-                print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
-            except ValueError:
-                print("Error: Value converting to int")
-        else:
-            print("Error: Incorrect data format. Expected 'message,speed,heading'")
+        message = data.get("message")
+        speedInput = data.get("speed")
+        headingInput = data.get("heading")
+        print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
 
         if message == "video":
@@ -136,11 +133,9 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             if not compressed_frame:
                 print("Error capturing frame")
 
-
         if stopflag.is_set():
             break
         
-
 def send_frame(sock, frame, client):
     try:
         sock.sendto(frame, client)
