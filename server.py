@@ -107,7 +107,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             data,addr = myqueue.get(block=False)
 
         except queue.Empty:
-            print("Queue empty")
+            #print("Queue empty")
             data = {"message": "no input"}
             message = data.get("message")
         if message != "no input":
