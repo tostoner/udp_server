@@ -113,6 +113,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         if message != "no input":
             speedInput = data.get("speed")
             headingInput = data.get("heading")
+            message = data.get("message")
             print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
 
