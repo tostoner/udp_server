@@ -28,6 +28,8 @@ stopflag = threading.Event()
 
 def init_rvr():
     rvr = SpheroRvrObserver()
+    rvr.on_did_sleep_notify(handler=keepAwake)
+
     print("robot object created")
 
     try:
@@ -45,7 +47,7 @@ def init_rvr():
         print("yaw reset")
         def battery_percentage_handler(percentage):
             print(f"Battery Percentage: {percentage}%")
-        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=10)}%")
+        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=100)}%")
 
         print("RVR initialized")
     except Exception as e:
@@ -101,6 +103,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
     speedInput = 0
 
     while not stopflag.is_set():
+        keepAwake(rvr)
         time.sleep(1/60)
         message = None
         try:
@@ -113,7 +116,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         if message != "no input":
             speedInput = data.get("speed")
             headingInput = data.get("heading")
-            message = data.get("message")
+            message = data.get("msg")
             print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
 
@@ -150,6 +153,7 @@ def send_frame(sock, frame, client):
         return False
     return True
 
+
 def start_server(ip, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
@@ -167,7 +171,9 @@ def signal_handler(_):
     cleanup(camera, SOCK, rvr)
     reciever_thread.join()
     handler_thread.join()
-
+def keepAwake(rvr):
+    print("RVR is trying to sleep, waking up...")
+    rvr.wake()
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
