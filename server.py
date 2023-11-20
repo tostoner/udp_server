@@ -9,6 +9,7 @@ import signal
 import sys
 import json
 import os
+import RPi.GPIO as GPIO
 jsonFile = '{"speed": 0, "heading": 0, "message": "video", "frame": 0"}'
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
@@ -18,6 +19,7 @@ try:
     from sphero_sdk import RvrLedGroups
     from sphero_sdk import DriveFlagsBitmask
     from sphero_sdk import DriveControlObserver
+
 
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
@@ -107,11 +109,11 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         except queue.Empty:
             print("Queue empty")
             data = {"message": "no input"}
-
-        message = data.get("message")
-        speedInput = data.get("speed")
-        headingInput = data.get("heading")
-        print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
+        if data != None:
+            message = data.get("message")
+            speedInput = data.get("speed")
+            headingInput = data.get("heading")
+            print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
 
         if message == "video":
@@ -190,3 +192,4 @@ if __name__ == "__main__":
         reciever_thread.join()
         handler_thread.join()
         cleanup(camera, SOCK, rvr)
+        
