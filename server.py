@@ -99,7 +99,6 @@ def recv_data(sock,queue, stopflag):
 
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
-    heading = 0
     speedInput = 0
 
     while not stopflag.is_set():
@@ -133,21 +132,27 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
-            if compressed_frame:#Kan bytte til switch case fordi det er rasksare
+            if compressed_frame:
                 print("sending frame")
-                send_frame(sock, compressed_frame, addr)
+                s = create_json_string(speedInput, headingInput, compressed_frame, message)
+                send_string(sock, s, addr)
             if not compressed_frame:
                 print("Error capturing frame")
 
         if stopflag.is_set():
             break
-        
-def send_frame(sock, frame, client):
+
+def create_json_string(speed, heading,frame, message):
+    jsonFile = {"message": message, "cameraPosX": speed, "heading": heading, "frame": frame}
+    jsonFile = json.dumps(jsonFile)
+    return jsonFile
+
+def send_string(sock, string, client):
     try:
-        sock.sendto(frame, client)
-        print(f"{sys.getsizeof(frame)} bytes sent")
+        sock.sendto(string, client)
+        print(f"{sys.getsizeof(string)} bytes sent")
     except socket.error as e:
-        frame_size = sys.getsizeof(frame) 
+        frame_size = sys.getsizeof(string) 
         print("Frame size:", frame_size)
         print(e)
         return False
