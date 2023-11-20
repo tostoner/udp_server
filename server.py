@@ -110,10 +110,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             print("Queue empty")
             data = {"message": "no input"}
             message = data.get("message")
-            if message != "no input":
-                speedInput = data.get("speed")
-                headingInput = data.get("heading")
-                print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
+        if message != "no input":
+            speedInput = data.get("speed")
+            headingInput = data.get("heading")
+            print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
 
         if message == "video":
