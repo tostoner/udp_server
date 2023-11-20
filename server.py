@@ -1,51 +1,26 @@
-import smbus
+import pi_servo_hat
 import time
-import automationhat
+import sys
 
-bus = smbus.SMBus(1)
-addr = 0x40
+def runExample():
 
-# Enable the chip
-bus.write_byte_data(addr, 0, 0x20)
-time.sleep(0.1)
+	print("\nSparkFun Pi Servo Hat Demo\n")
+	mySensor = pi_servo_hat.PiServoHat()
 
-# Enable Prescale change as noted in the datasheet
-bus.write_byte_data(addr, 0, 0x10)
-time.sleep(0.1)
+	if mySensor.isConnected() == False:
+		print("The Qwiic PCA9685 device isn't connected to the system. Please check your connection", \
+			file=sys.stderr)
+		return
 
-# Delay for reset
-time.sleep(0.1)
+	mySensor.restart()
+  
+	# Test Run
+	#########################################
+	# Moves servo position to 0 degrees (1ms), Channel 0
+	mySensor.move_servo_position(0, 0)
 
-# Changes the Prescale register value for 50 Hz
-bus.write_byte_data(addr, 0xfe, 0x79)
+	# Pause 1 sec
+	time.sleep(1)
 
-# Enable the chip
-bus.write_byte_data(addr, 0, 0x20)
-time.sleep(0.1)
-
-# Set initial position (0 degrees)
-bus.write_word_data(addr, 0x08, 209)
-time.sleep(0.5)
-
-try:
-    while True:
-        # Move to 45 degrees
-        bus.write_word_data(addr, 0x08, 312)
-        time.sleep(0.5)
-
-        # Move to 0 degrees
-        bus.write_word_data(addr, 0x08, 209)
-        time.sleep(0.5)
-
-        # Move to 90 degrees
-        bus.write_word_data(addr, 0x08, 416)
-        time.sleep(0.5)
-
-except KeyboardInterrupt:
-    # Handle keyboard interrupt (Ctrl+C)
-    pass
-finally:
-    # Cleanup
-    bus.write_word_data(addr, 0x08, 0)
-    time.sleep(0.5)
-    bus.write_byte_data(addr, 0, 0x00)  # Disable the chip
+	# Moves servo position to 90 degrees (2ms), Channel 0
+	mySensor.move_servo_position(0, 90)
