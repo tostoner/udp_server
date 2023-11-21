@@ -127,7 +127,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr, servo):
             panInput = data.get("pan")
             tiltInput = data.get("tilt")
             message = data.get("msg")
-            print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
+            # print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
             # Move the servo motors based on pan and tilt values
             if panInput is not None:
