@@ -187,7 +187,7 @@ def signal_handler(_):
 
 if __name__ == "__main__":
     # Initialize the PiServoHat object
-    servo = pi_servohat.PiServoHat()
+    servo = pi_servo_hat.PiServoHat()
     servo.restart()
 
     MAX_UDP_PACKET_SIZE = 65536
