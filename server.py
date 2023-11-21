@@ -9,9 +9,6 @@ import signal
 import sys
 import json
 import os
-import pi_servo_hat
-
-
 jsonFile = '{"speed": 0, "heading": 0, "message": "video", "frame": 0"}'
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
@@ -30,8 +27,6 @@ stopflag = threading.Event()
 
 def init_rvr():
     rvr = SpheroRvrObserver()
-    rvr.on_did_sleep_notify(handler=keepAwake)
-
     print("robot object created")
 
     try:
@@ -49,7 +44,7 @@ def init_rvr():
         print("yaw reset")
         def battery_percentage_handler(percentage):
             print(f"Battery Percentage: {percentage}%")
-        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=100)}%")
+        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=10)}%")
 
         print("RVR initialized")
     except Exception as e:
@@ -76,22 +71,37 @@ def capture_and_compress(camera):
     else:
         print("frame not found")
         return None
-
-def recv_data(sock,queue, stopflag):
+    
+def recv_data(sock, queue, stopflag):
     while not stopflag.is_set():
         try:
-            data,addr = sock.recvfrom(4096)
+            data, addr = sock.recvfrom(4096)
             data = data.decode("utf-8")
-            print(f"data recieved {data}")
-            try:
-                json_data = json.loads(data)
+            print(f"data received {data}")
+
+            # Split the received data into a list using commas as separators
+            data_list = data.split(',')
+
+            # Check if the data is in the expected format
+            if len(data_list) == 5:
+                message, speed, heading, pan, tilt = data_list
+
+                # Create a dictionary from the received data
+                json_data = {
+                    "msg": message,
+                    "speed": int(speed),
+                    "heading": int(heading),
+                    "pan": int(pan),
+                    "tilt": int(tilt)
+                }
+
                 if queue.qsize() >= 5:
                     # This will remove the oldest item from the queue
                     queue.get_nowait()
 
                 queue.put((json_data, addr))
-            except ValueError:
-                print("Error: Value converting to json")
+            else:
+                print("Error: Malformed data format")
 
         except OSError as e:
             print(f"Socket error: {str(e)}")
@@ -99,12 +109,13 @@ def recv_data(sock,queue, stopflag):
         if stopflag.is_set():
             break
 
+
 def handle_connection(camera, myqueue, sock, stopflag, rvr):
     startVideo = False
+    heading = 0
     speedInput = 0
 
     while not stopflag.is_set():
-        keepAwake(rvr)
         time.sleep(1/60)
         message = None
         try:
@@ -113,19 +124,12 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
         except queue.Empty:
             #print("Queue empty")
             data = {"message": "no input"}
-            message = data.get("msg")
+            message = data.get("message")
         if message != "no input":
             speedInput = data.get("speed")
             headingInput = data.get("heading")
-            tiltInput = data.get("tilt")
-            panInput = data.get("pan")
-            message = data.get("msg")
-            print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}, Tilt: {tiltInput}, Pan: {panInput}")
-
-            # Control servos based on received pan and tilt values
-            servo.move_servo_position(0, panInput, 180)
-            servo.move_servo_position(1, tiltInput, 180)
-
+            message = data.get("message")
+            print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
 
         if message == "video":
@@ -141,32 +145,25 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
 
         if startVideo == True:
             compressed_frame = capture_and_compress(camera)
-            if compressed_frame:
+            if compressed_frame:#Kan bytte til switch case fordi det er rasksare
                 print("sending frame")
-                s = create_json_string(speedInput, headingInput, compressed_frame, message)
-                send_string(sock, s, addr)
+                send_frame(sock, compressed_frame, addr)
             if not compressed_frame:
                 print("Error capturing frame")
 
         if stopflag.is_set():
             break
-
-def create_json_string(speed, heading,frame, message):
-    jsonFile = {"message": message, "cameraPosX": speed, "heading": heading, "frame": frame}
-    jsonFile = json.dumps(jsonFile)
-    return jsonFile
-
-def send_string(sock, string, client):
+        
+def send_frame(sock, frame, client):
     try:
-        sock.sendto(string, client)
-        print(f"{sys.getsizeof(string)} bytes sent")
+        sock.sendto(frame, client)
+        print(f"{sys.getsizeof(frame)} bytes sent")
     except socket.error as e:
-        frame_size = sys.getsizeof(string)
+        frame_size = sys.getsizeof(frame) 
         print("Frame size:", frame_size)
         print(e)
         return False
     return True
-
 
 def start_server(ip, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -185,21 +182,12 @@ def signal_handler(_):
     cleanup(camera, SOCK, rvr)
     reciever_thread.join()
     handler_thread.join()
-def keepAwake(rvr):
-    print("RVR is trying to sleep, waking up...")
-    rvr.wake()
+
 
 if __name__ == "__main__":
     MAX_UDP_PACKET_SIZE = 65536
     SOCK = start_server("10.25.46.172", 12395)
     print(f"server touple is {SOCK.getsockname()}")
-
-    # Initialize servo
-    servo = pi_servo_hat.PiServoHat()
-    servo.restart()
-    servo.move_servo_position(0, 35, 180)  # Initial pan position
-    servo.move_servo_position(1, -30, 180)  # Initial tilt position
-
     camera = init_camera()
     print("camera initialized")
     rvr = init_rvr()
@@ -220,3 +208,4 @@ if __name__ == "__main__":
         reciever_thread.join()
         handler_thread.join()
         cleanup(camera, SOCK, rvr)
+        
