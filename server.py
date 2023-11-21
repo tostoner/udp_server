@@ -130,8 +130,10 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr, servo):
             print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
             # Move the servo motors based on pan and tilt values
-            servo.move_servo_position(0, panInput, 180)  # Assuming pan is on pin 0
-            servo.move_servo_position(1, tiltInput, 180)  # Assuming tilt is on pin 1
+            if panInput is not None:
+                servo.move_servo_position(0, panInput, 180)  # Assuming pan is on pin 0
+            if tiltInput is not None:
+                servo.move_servo_position(1, tiltInput, 180)  # Assuming tilt is on pin 1
 
         if message == "video":
             startVideo = True
@@ -154,6 +156,7 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr, servo):
 
         if stopflag.is_set():
             break
+
 
 def send_frame(sock, frame, client):
     try:
