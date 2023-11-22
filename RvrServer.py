@@ -10,97 +10,102 @@ import json
 import base64
 import os
 
-# Import Sphero RVR SDK
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 
-
 class RvrServer:
+    stopflag = False
+    addr = 0
+    jsonFile_to_send = '{"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}'
+    jsonFile = '{"speed": 0, "heading": 0, "message": "None"}'
+    DT = 1/60
+
     def __init__(self, ip, port):
         self.stopflag = threading.Event()
         self.sock = self.start_server(ip, port)
-        self.camera = self.init_camera()
-        self.rvr = self.init_rvr()
         self.reciever_queue = queue.Queue()
         self.sending_queue = queue.Queue()
+        self.init_rvr()
+        self.init_camera()
 
         # Register signal handlers
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
 
         # Start threads
-        self.reciever_thread = threading.Thread(target=self.recv_data)
-        self.sending_thread = threading.Thread(target=self.sending_thread)
-        self.driver_thread = threading.Thread(target=self.handle_connection)
+        self.reciever_thread = threading.Thread(target=self.recieverMethod)
+        self.sending_thread = threading.Thread(target=self.sendingMethod)
+        self.driver_thread = threading.Thread(target=self.driver_thread)
 
-    def init_rvr():
-        rvr = SpheroRvrObserver()
-        rvr.on_did_sleep_notify(handler=keepAwake)
+    def init_rvr(self):
+        self.rvr = SpheroRvrObserver()
+        self.rvr.on_did_sleep_notify(handler=self.keepAwake)
 
         print("robot object created")
 
         try:
             print("waking robot")
-            rvr.wake()
+            self.rvr.wake()
             print("robot awake")
             time.sleep(1)
             print("setting leds")
-            rvr.set_all_leds(
+            self.rvr.set_all_leds(
                 led_group=RvrLedGroups.all_lights.value,
                 led_brightness_values=[color for _ in range(10) for color in [0, 255, 0]]
             )
             print("leds set")
-            rvr.reset_yaw()
+            self.rvr.reset_yaw()
             print("yaw reset")
             def battery_percentage_handler(percentage):
                 print(f"Battery Percentage: {percentage}%")
-            rvr.get_battery_percentage(battery_percentage_handler, timeout=100)
+            self.rvr.get_battery_percentage(battery_percentage_handler, timeout=100)
             print("RVR initialized")
         except Exception as e:
             print(f"Error initializing RVR: {e}")
-        return rvr
 
-    def init_camera():
-        camera = cv2.VideoCapture(0)
+    def init_camera(self):
+        self.camera = cv2.VideoCapture(0)
         print("camera started")
-        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         print("capture frame resized")
-        return camera
+        
 
-    def capture_and_compress(camera):
-        ret,frame = camera.read()
+    def capture_and_compress(self):
+        ret, frame = self.camera.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            _, encoded_frame = cv2.imencode('.jpg', frame)
-            if encoded_frame is None:
+            success, encoded_frame = cv2.imencode('.jpg', frame)
+            if not success:
                 print("Error encoding frame")
                 return None
-            return encoded_frame.tobytes()
+            base64_frame = base64.b64encode(encoded_frame).decode('utf-8')
+            return base64_frame
         else:
-            print("frame not found")
+            print("Frame not found")
             return None
-        
-    def recv_data(sock,queue, stopflag):
-        global addr
-        while not stopflag.is_set():
+
+    def recieverMethod(self):
+
+        while not self.stopflag.is_set():
+            time.sleep(self.DT)
             try:
-                data,addr = sock.recvfrom(4096)
+                data, self.addr = self.sock.recvfrom(4096)
                 data = data.decode("utf-8")
                 print(f"data recieved {data}")
                 try: 
                     json_data = json.loads(data)
-                    if queue.qsize() >= 5:
+                    if self.reciever_queue.qsize() >= 5:
                         # This will remove the oldest item from the queue
-                        queue.get_nowait()
+                        self.reciever_queue.get_nowait()
                     
-                    queue.put((json_data, addr))
+                    self.reciever_queue.put((json_data))
                 except ValueError:
                     print("Error: Value converting to json")
                 
             except OSError as e:
                 print(f"Socket error: {str(e)}")
-            if stopflag.is_set():
+            if self.stopflag.is_set():
                 break
 
     def run(self):
@@ -108,112 +113,71 @@ class RvrServer:
         self.driver_thread.start()
         self.sending_thread.start()
 
-        self.reciever_thread.join()
-        self.driver_thread.join()
-        self.sending_thread.join()
-        self.cleanup()
-
-
-    def cleanup(self):
-        self.camera.release()
-        self.sock.close()
-        self.rvr.close()
-
-    def signal_handler(self, signal, frame):
-        print('You pressed Ctrl+C!')
-        self.stopflag.set()
-        self.cleanup()
-
-    def handle_connection(camera, receiveQueue, sendQueue, sock, stopflag, rvr):
+    def driverMethod(self):
         startVideo = False
         speedInput = 0
-        jsonString = self.create_json_string(0,0,0,0, False)
-        while not stopflag.is_set():
-            self.keepAwake(rvr)
-            time.sleep(1/60)
+        while not self.stopflag.is_set():
+            time.sleep(self.DT)
+            self.keepAwake(self.rvr)
+
             message = None
             try:
-                data,addr = receiveQueue.get(block=False)
-
+                self.jsonFile = self.reciever_queue.get(block=False)
+                
             except queue.Empty:
                 #print("Queue empty")
-                data = {"message": "no input"}
-                message = data.get("message")
-            if message != "no input":
-                speedInput = data.get("speed")
-                headingInput = data.get("heading")
-                message = data.get("msg")
+                self.jsonFile[message] = "no input"
+
+            if self.jsonFile.get("message") != "no input":
+                speedInput = self.jsonFile.get("speed")
+                headingInput = self.jsonFile.get("heading")
+                message = self.jsonFile.get("message")
                 print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
-
-            if message == "video":
+            if message == "start_video":
                 startVideo = True
             elif message == "stop_video":
                 startVideo = False
             elif message == "drive":
-                rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.none.value)
+                self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.none.value)
             elif message == "drive_reverse":
-                rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
+                self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
             elif message =="dont_drive":
-                rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
+                self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
 
             if startVideo == True:
-                jsonString["video"] = True
-                sending_queue.put(jsonString)
+                self.jsonFile_to_send["videoRunning"] = True
             else:
-                jsonString["video"] = False
-                sending_queue.put(jsonString)
-
-
-            if stopflag.is_set():
+                self.jsonFile_to_send["video"] = False
+            if self.stopflag.is_set():
                 break
 
-    def sendingThread(sock, myqueue, stopflag):
-        global addr
-        video = False
-        sleepTime = 1/60
-        while not stopflag.is_set():
-            while video:
-                jsonString = myqueue.get()
-                video = jsonString.get("video")
-                compressed_frame = capture_and_compress(camera)
+    def sendingMethod(self):
+        videoRunning = False
+
+        while not self.stopflag.is_set():
+            while videoRunning:
+                videoRunning = self.jsonFile_to_send.get("videoRunning")
+                compressed_frame = self.capture_and_compress(self.camera)
+                self.jsonFile_to_send["frame"] = compressed_frame
                 try:
-                    jsonString = edit_json_string(jsonString, "frame", compressed_frame)
-                    jsonBytes = encode_json_file(jsonString)
-                    UDP_send(sock, jsonBytes, addr)
+                    jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
+                    self.UDP_send(self.sock, jsonBytes, self.addr)
                 except queue.Empty:
                     print("Queue empty")
 
-                time.sleep(sleepTime)
+                time.sleep(self.DT)
 
-            if not video:
-                jsonString = myqueue.get()
-                video = jsonString.get("video") #this is a bool, check if we want to send video
-                jsonBytes = encode_json_file(jsonString)
-                UDP_send(sock, jsonBytes, addr)
-                time.sleep(sleepTime)
-
-    def create_json_string(speed, heading,frame, message):
-        #convert bytes to string
-        frame = base64.b64encode(frame).decode('utf-8')
-        jsonFile = {"message": message, "cameraPosX": speed, "heading": heading, "frame": frame, "video": True}
-        return jsonFile
-
-    def encode_json_file(jsonFile):
-        jsonBytes = json.dumps(jsonFile).encode('utf-8')
-        return jsonBytes
-
-    def edit_json_string(jsonFile, varToChange, value):
-        if varToChange == "frame":
-            value = base64.b64encode(value).decode('utf-8')
-            jsonFile[varToChange] = value
-        else:
-            jsonFile[varToChange] = value
-        return jsonFile
+            if not videoRunning:
+                videoRunning = self.jsonFile_to_send.get("videoRunning") #this is a bool, check if we want to send video
+                jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
+                self.UDP_send(self.sock, jsonBytes, self.addr)
+                time.sleep(self.DT)
 
 
-    def UDP_send(sock, string, client):
+    def UDP_send(self, string, client):
         try:
+            sock = self.sock
             sock.sendto(string, client)
             print(f"{sys.getsizeof(string)} bytes sent")
         except socket.error as e:
@@ -224,24 +188,26 @@ class RvrServer:
         return True
 
 
-    def start_server(ip, port):
+    def start_server(self,ip, port):
+        
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
         sock.bind((ip, port))
         print("Server started")
         return sock
-    def cleanup(camera, SOCK, rvr):
-        camera.release()
-        SOCK.close()
-        rvr.close()
 
-    def signal_handler(_):
-        print('You pressed Ctrl+C!')
-        stopflag.set()
-        cleanup(camera, SOCK, rvr)
-        reciever_thread.join()
-        driver_thread.join()
-        sendingThread.join()
+    def cleanup(self):
+        self.camera.release()
+        self.sock.close()
+        self.rvr.close()
+
+    def signal_handler(self, signal_received, frame):
+        print('Signal received, shutting down!')
+        self.stopflag.set()
+        self.cleanup()
+        self.reciever_thread.join()
+        self.driver_thread.join()
+        self.sending_thread.join()
     def keepAwake(rvr):
         #print("RVR is trying to sleep, waking up...")
         rvr.wake()
