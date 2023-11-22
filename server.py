@@ -8,16 +8,16 @@ import time
 import signal
 import sys
 import json
+import base64
 import os
 jsonFile = '{"speed": 0, "heading": 0, "message": "video", "frame": 0"}'
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
     from sphero_sdk import SpheroRvrObserver
-    from sphero_sdk import RawMotorModesEnum
-    from sphero_sdk import Colors
+
     from sphero_sdk import RvrLedGroups
     from sphero_sdk import DriveFlagsBitmask
-    from sphero_sdk import DriveControlObserver
+
 
 
 except ImportError:
@@ -45,8 +45,7 @@ def init_rvr():
         rvr.reset_yaw()
         print("yaw reset")
         def battery_percentage_handler(percentage):
-            print(f"Battery Percentage: {percentage}%1")
-        #print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=100)}%2")
+            print(f"Battery Percentage: {percentage}%")
         rvr.get_battery_percentage(battery_percentage_handler, timeout=100)
         print("RVR initialized")
     except Exception as e:
@@ -142,6 +141,8 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             break
 
 def create_json_string(speed, heading,frame, message):
+    #convert bytes to string
+    frame = base64.b64encode(frame).decode('utf-8')
     jsonFile = {"message": message, "cameraPosX": speed, "heading": heading, "frame": frame}
     jsonFile = json.dumps(jsonFile)
     return jsonFile
