@@ -46,8 +46,8 @@ def init_rvr():
         print("yaw reset")
         def battery_percentage_handler(percentage):
             print(f"Battery Percentage: {percentage}%1")
-        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=100)}%2")
-
+        #print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=100)}%2")
+        rvr.get_battery_percentage(battery_percentage_handler, timeout=100)
         print("RVR initialized")
     except Exception as e:
         print(f"Error initializing RVR: {e}")
@@ -176,7 +176,7 @@ def signal_handler(_):
     reciever_thread.join()
     handler_thread.join()
 def keepAwake(rvr):
-    print("RVR is trying to sleep, waking up...")
+    #print("RVR is trying to sleep, waking up...")
     rvr.wake()
 
 if __name__ == "__main__":
