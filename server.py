@@ -10,7 +10,7 @@ import sys
 import json
 import base64
 import os
-jsonFile = '{"speed": 0, "heading": 0, "message": "video", "frame": 0"}'
+jsonFile = '{"speed": 0, "heading": 0, "message": "video", "frame": 0}'
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
     from sphero_sdk import SpheroRvrObserver
@@ -18,12 +18,11 @@ try:
     from sphero_sdk import RvrLedGroups
     from sphero_sdk import DriveFlagsBitmask
 
-
-
 except ImportError:
     raise ImportError('Cannot import from sphero_sdk')
 
 stopflag = threading.Event()
+addr = 0
 
 def init_rvr():
     rvr = SpheroRvrObserver()
@@ -74,6 +73,7 @@ def capture_and_compress(camera):
         return None
     
 def recv_data(sock,queue, stopflag):
+    global addr
     while not stopflag.is_set():
         try:
             data,addr = sock.recvfrom(4096)
@@ -91,20 +91,19 @@ def recv_data(sock,queue, stopflag):
             
         except OSError as e:
             print(f"Socket error: {str(e)}")
-            break
         if stopflag.is_set():
             break
 
-def handle_connection(camera, myqueue, sock, stopflag, rvr):
+def handle_connection(camera, receiveQueue, sendQueue, sock, stopflag, rvr):
     startVideo = False
     speedInput = 0
-
+    jsonString = create_json_string(0,0,0,0, False)
     while not stopflag.is_set():
         keepAwake(rvr)
         time.sleep(1/60)
         message = None
         try:
-            data,addr = myqueue.get(block=False)
+            data,addr = receiveQueue.get(block=False)
 
         except queue.Empty:
             #print("Queue empty")
@@ -129,26 +128,61 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr):
             rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
 
         if startVideo == True:
-            compressed_frame = capture_and_compress(camera)
-            if compressed_frame:
-                print("sending frame")
-                s = create_json_string(speedInput, headingInput, compressed_frame, message)
-                send_string(sock, s, addr)
-            if not compressed_frame:
-                print("Error capturing frame")
+            jsonString["video"] = True
+            sending_queue.put(jsonString)
+        else:
+            jsonString["video"] = False
+            sending_queue.put(jsonString)
+
 
         if stopflag.is_set():
             break
 
+def sendingThread(sock, myqueue, stopflag):
+    global addr
+    video = False
+    sleepTime = 1/60
+    while not stopflag.is_set():
+        while video:
+            jsonString = myqueue.get()
+            video = jsonString.get("video")
+            compressed_frame = capture_and_compress(camera)
+            try:
+                jsonString = edit_json_string(jsonString, "frame", compressed_frame)
+                jsonBytes = encode_json_file(jsonString)
+                UDP_send(sock, jsonBytes, addr)
+            except queue.Empty:
+                print("Queue empty")
+
+            time.sleep(sleepTime)
+
+        if not video:
+            jsonString = myqueue.get()
+            video = jsonString.get("video") #this is a bool, check if we want to send video
+            jsonBytes = encode_json_file(jsonString)
+            UDP_send(sock, jsonBytes, addr)
+            time.sleep(sleepTime)
+
 def create_json_string(speed, heading,frame, message):
     #convert bytes to string
     frame = base64.b64encode(frame).decode('utf-8')
-    jsonFile = {"message": message, "cameraPosX": speed, "heading": heading, "frame": frame}
-    jsonFile = json.dumps(jsonFile)
-    jsonBytes = jsonFile.encode('utf-8')
+    jsonFile = {"message": message, "cameraPosX": speed, "heading": heading, "frame": frame, "video": True}
+    return jsonFile
+
+def encode_json_file(jsonFile):
+    jsonBytes = json.dumps(jsonFile).encode('utf-8')
     return jsonBytes
 
-def send_string(sock, string, client):
+def edit_json_string(jsonFile, varToChange, value):
+    if varToChange == "frame":
+        value = base64.b64encode(value).decode('utf-8')
+        jsonFile[varToChange] = value
+    else:
+        jsonFile[varToChange] = value
+    return jsonFile
+
+
+def UDP_send(sock, string, client):
     try:
         sock.sendto(string, client)
         print(f"{sys.getsizeof(string)} bytes sent")
@@ -176,7 +210,8 @@ def signal_handler(_):
     stopflag.set()
     cleanup(camera, SOCK, rvr)
     reciever_thread.join()
-    handler_thread.join()
+    driver_thread.join()
+    sendingThread.join()
 def keepAwake(rvr):
     #print("RVR is trying to sleep, waking up...")
     rvr.wake()
@@ -189,20 +224,24 @@ if __name__ == "__main__":
     print("camera initialized")
     rvr = init_rvr()
 
-    q = queue.Queue()
+    reciever_queue = queue.Queue()
+    sending_queue = queue.Queue()
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    reciever_thread = threading.Thread(target=recv_data, args=(SOCK,q, stopflag))
-    handler_thread = threading.Thread(target=handle_connection, args=(camera, q, SOCK,stopflag, rvr))
+    reciever_thread = threading.Thread(target=recv_data, args=(SOCK,reciever_queue, stopflag))
+    sendingThread = threading.Thread(target=sendingThread, args=(SOCK,sending_queue, stopflag))
+    driver_thread = threading.Thread(target=handle_connection, args=(camera, reciever_queue, sending_queue, SOCK,stopflag, rvr))
 
     try:
         reciever_thread.start()
-        handler_thread.start()
+        driver_thread.start()
+        sendingThread.start()
     except KeyboardInterrupt:
         print("Keyboard interrupt")
     finally:
         reciever_thread.join()
-        handler_thread.join()
+        driver_thread.join()
+        sendingThread.join()
         cleanup(camera, SOCK, rvr)
         
