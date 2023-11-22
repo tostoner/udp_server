@@ -9,7 +9,6 @@ import signal
 import sys
 import json
 import os
-import RPi.GPIO as GPIO
 jsonFile = '{"speed": 0, "heading": 0, "message": "video", "frame": 0"}'
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 try:
@@ -46,8 +45,8 @@ def init_rvr():
         rvr.reset_yaw()
         print("yaw reset")
         def battery_percentage_handler(percentage):
-            print(f"Battery Percentage: {percentage}%")
-        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=100)}%")
+            print(f"Battery Percentage: {percentage}%1")
+        print(f"Battery percentage. {rvr.get_battery_percentage(battery_percentage_handler, timeout=100)}%2")
 
         print("RVR initialized")
     except Exception as e:
