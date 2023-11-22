@@ -145,7 +145,8 @@ def create_json_string(speed, heading,frame, message):
     frame = base64.b64encode(frame).decode('utf-8')
     jsonFile = {"message": message, "cameraPosX": speed, "heading": heading, "frame": frame}
     jsonFile = json.dumps(jsonFile)
-    return jsonFile
+    jsonBytes = jsonFile.encode('utf-8')
+    return jsonBytes
 
 def send_string(sock, string, client):
     try:
