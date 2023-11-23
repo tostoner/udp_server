@@ -129,11 +129,21 @@ def handle_connection(camera, myqueue, sock, stopflag, rvr, servo):
             message = data.get("msg")
             # print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
-            # Move the servo motors based on pan and tilt values
-            if panInput is not None:
-                servo.move_servo_position(0, panInput, 180)  # Assuming pan is on pin 0
-            if tiltInput is not None:
-                servo.move_servo_position(1, tiltInput, 180)  # Assuming tilt is on pin 1
+           # Move the servo motors based on pan and tilt values
+        if panInput is not None:
+            # Adjust the input values to be in the range of -90 to 90
+            pan_input_adjusted = max(min(panInput, 90), -90)
+            # Map the adjusted input value to the servo range with 0 in the middle
+            pan_servo_position = int(pan_input_adjusted * (180 / 90) + 90)
+            servo.move_servo_position(0, pan_servo_position, 180)  # Assuming pan is on pin 0
+        
+        if tiltInput is not None:
+            # Adjust the input values to be in the range of -90 to 90
+            tilt_input_adjusted = max(min(tiltInput, 90), -90)
+            # Map the adjusted input value to the servo range with 0 in the middle
+            tilt_servo_position = int(tilt_input_adjusted * (180 / 90) + 90)
+            servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
+
 
         if message == "video":
             startVideo = True
