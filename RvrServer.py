@@ -35,7 +35,7 @@ class RvrServer:
         # Start threads
         self.reciever_thread = threading.Thread(target=self.recieverMethod)
         self.sending_thread = threading.Thread(target=self.sendingMethod)
-        self.driver_thread = threading.Thread(target=self.driver_thread)
+        self.driver_thread = threading.Thread(target=self.driverMethod)
 
     def init_rvr(self):
         self.rvr = SpheroRvrObserver()
