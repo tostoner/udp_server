@@ -118,7 +118,7 @@ class RvrServer:
         speedInput = 0
         while not self.stopflag.is_set():
             time.sleep(self.DT)
-            self.keepAwake(self.rvr)
+            self.keepAwake()
 
             message = None
             try:
@@ -208,8 +208,8 @@ class RvrServer:
         self.reciever_thread.join()
         self.driver_thread.join()
         self.sending_thread.join()
-    def keepAwake(rvr):
+    def keepAwake(self):
         #print("RVR is trying to sleep, waking up...")
-        rvr.wake()
+        self.rvr.wake()
 
         # ... [Other methods continue here]
