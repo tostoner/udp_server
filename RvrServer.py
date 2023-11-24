@@ -18,7 +18,7 @@ class RvrServer:
     addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}
     jsonFile = {"speed": 0, "heading": 0, "message": "None"}
-    DT = 1/90 # simply used to do everything at 30Hz
+    DT = 1/30 # simply used to do everything at 30Hz. Trying to limit cpu use
 
     def __init__(self, ip, port):
         self.stopflag = threading.Event()
@@ -95,7 +95,7 @@ class RvrServer:
                 print(f"data recieved {data}")
                 try: 
                     json_data = json.loads(data)
-                    if self.reciever_queue.qsize() >= 20:
+                    if self.reciever_queue.qsize() >= 10:
                         # This will remove the oldest item from the queue
                         self.reciever_queue.get_nowait()
                     
@@ -155,6 +155,7 @@ class RvrServer:
     def sendingMethod(self):
         while not self.stopflag.is_set():
             videoRunning = self.jsonFile_to_send["videoRunning"]
+            print(videoRunning)
             if videoRunning:
                 #print("video running")
                 compressed_frame = self.capture_and_compress()
