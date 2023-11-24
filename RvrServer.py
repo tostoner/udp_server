@@ -161,12 +161,12 @@ class RvrServer:
                 self.jsonFile_to_send["frame"] = compressed_frame
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 print(self.addr)
-                self.UDP_send(jsonBytes, self.addr)
+                self.UDP_send(jsonBytes)
                 print("Message sent")
 
             else:
                 jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
-                self.UDP_send(jsonBytes, self.addr)
+                self.UDP_send(jsonBytes)
                 print("Video not running, message sent")
 
             time.sleep(self.DT)
