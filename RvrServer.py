@@ -116,7 +116,9 @@ class RvrServer:
     def driverMethod(self):
         speedInput = 0
         headingInput = 0
+        print("driver thread started")
         while not self.stopflag.is_set():
+            print("driver thread running")
             time.sleep(self.DT)
             self.keepAwake()
 
