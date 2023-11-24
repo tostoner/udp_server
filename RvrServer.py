@@ -95,7 +95,7 @@ class RvrServer:
                 print(f"data recieved {data}")
                 try: 
                     json_data = json.loads(data)
-                    if self.reciever_queue.qsize() >= 5:
+                    if self.reciever_queue.qsize() >= 20:
                         # This will remove the oldest item from the queue
                         self.reciever_queue.get_nowait()
                     
