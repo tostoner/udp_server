@@ -118,7 +118,7 @@ class RvrServer:
         headingInput = 0
         print("driver thread started")
         while not self.stopflag.is_set():
-            print("driver thread running")
+            #print("driver thread running")
             time.sleep(self.DT)
             self.keepAwake()
 
@@ -138,10 +138,10 @@ class RvrServer:
 
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
-                print("self.jsonFile_to_send['videoRunning'] = True")
+                #print("self.jsonFile_to_send['videoRunning'] = True")
             elif message == "stop_video":
                 self.jsonFile_to_send["video"] = False
-                print("self.jsonFile_to_send['videoRunning'] = False")
+                #print("self.jsonFile_to_send['videoRunning'] = False")
             elif message == "drive":
                 self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.none.value)
             elif message == "drive_reverse":
@@ -156,18 +156,18 @@ class RvrServer:
         while not self.stopflag.is_set():
             videoRunning = self.jsonFile_to_send["videoRunning"]
             if videoRunning:
-                print("video running")
+                #print("video running")
                 compressed_frame = self.capture_and_compress()
                 self.jsonFile_to_send["frame"] = compressed_frame
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 print(self.addr)
                 self.UDP_send(jsonBytes)
-                print("Message sent")
+                #print("Message sent")
 
             else:
                 jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
                 self.UDP_send(jsonBytes)
-                print("Video not running, message sent")
+                #print("Video not running, message sent")
 
             time.sleep(self.DT)
 
