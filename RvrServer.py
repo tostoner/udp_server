@@ -15,7 +15,7 @@ from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 
 class RvrServer:
     stopflag = False
-    addr = 0
+    addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}
     jsonFile = {"speed": 0, "heading": 0, "message": "None"}
     DT = 1/60
