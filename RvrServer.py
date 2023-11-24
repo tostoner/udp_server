@@ -168,7 +168,7 @@ class RvrServer:
                 jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
                 self.UDP_send(jsonBytes)
                 #print("Video not running, message sent")
-            self.jsonFile_to_send.clear()
+
 
             time.sleep(self.DT)
 
