@@ -133,7 +133,7 @@ class RvrServer:
                 speedInput = self.jsonFile.get("speed")
                 headingInput = self.jsonFile.get("heading")
                 message = self.jsonFile.get("message")
-                print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
+                #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
@@ -155,7 +155,6 @@ class RvrServer:
     def sendingMethod(self):
         while not self.stopflag.is_set():
             videoRunning = self.jsonFile_to_send.get("videoRunning")
-            print(videoRunning)
             if videoRunning:
                 #print("video running")
                 compressed_frame = self.capture_and_compress()
