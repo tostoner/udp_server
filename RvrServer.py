@@ -160,7 +160,7 @@ class RvrServer:
                 compressed_frame = self.capture_and_compress()
                 self.jsonFile_to_send["frame"] = compressed_frame
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
-                print(self.addr)
+                #print(self.addr)
                 self.UDP_send(jsonBytes)
                 #print("Message sent")
 
