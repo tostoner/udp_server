@@ -154,7 +154,7 @@ class RvrServer:
 
     def sendingMethod(self):
         while not self.stopflag.is_set():
-            videoRunning = self.jsonFile_to_send["videoRunning"]
+            videoRunning = self.jsonFile_to_send.get("videoRunning")
             print(videoRunning)
             if videoRunning:
                 #print("video running")
