@@ -160,6 +160,7 @@ class RvrServer:
                 compressed_frame = self.capture_and_compress()
                 self.jsonFile_to_send["frame"] = compressed_frame
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
+                print(self.addr)
                 self.UDP_send(jsonBytes, self.addr)
                 print("Message sent")
 
@@ -171,17 +172,19 @@ class RvrServer:
             time.sleep(self.DT)
 
 
-    def UDP_send(self, string, client):
-        try:
-            sock = self.sock
-            sock.sendto(string, client)
-            print(f"{sys.getsizeof(string)} bytes sent")
-        except socket.error as e:
-            frame_size = sys.getsizeof(string) 
-            print("Frame size:", frame_size)
-            print(e)
-            return False
-        return True
+    def UDP_send(self, string):
+        if self.addr is not None:
+            try:
+                sock = self.sock
+                sock.sendto(string, self.addr)
+                print(f"{sys.getsizeof(string)} bytes sent")
+            except socket.error as e:
+                frame_size = sys.getsizeof(string) 
+                print("Frame size:", frame_size)
+                print(e)
+                return False
+            return True
+        print("No address to send to")
 
 
     def start_server(self,ip, port):
