@@ -16,8 +16,8 @@ from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 class RvrServer:
     stopflag = False
     addr = 0
-    jsonFile_to_send = '{"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}'
-    jsonFile = '{"speed": 0, "heading": 0, "message": "None"}'
+    jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}
+    jsonFile = {"speed": 0, "heading": 0, "message": "None"}
     DT = 1/60
 
     def __init__(self, ip, port):
@@ -116,6 +116,7 @@ class RvrServer:
     def driverMethod(self):
         startVideo = False
         speedInput = 0
+        headingInput = 0
         while not self.stopflag.is_set():
             time.sleep(self.DT)
             self.keepAwake()
@@ -153,26 +154,19 @@ class RvrServer:
                 break
 
     def sendingMethod(self):
-        videoRunning = False
-
         while not self.stopflag.is_set():
-            while videoRunning:
-                videoRunning = self.jsonFile_to_send.get("videoRunning")
-                compressed_frame = self.capture_and_compress(self.camera)
+            videoRunning = self.jsonFile_to_send["videoRunning"]
+            if videoRunning:
+                compressed_frame = self.capture_and_compress()
                 self.jsonFile_to_send["frame"] = compressed_frame
-                try:
-                    jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
-                    self.UDP_send(self.sock, jsonBytes, self.addr)
-                except queue.Empty:
-                    print("Queue empty")
+                jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
+                self.UDP_send(jsonBytes, self.addr)
 
-                time.sleep(self.DT)
-
-            if not videoRunning:
-                videoRunning = self.jsonFile_to_send.get("videoRunning") #this is a bool, check if we want to send video
+            else:
                 jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
-                self.UDP_send(self.sock, jsonBytes, self.addr)
-                time.sleep(self.DT)
+                self.UDP_send(jsonBytes, self.addr)
+
+            time.sleep(self.DT)
 
 
     def UDP_send(self, string, client):
