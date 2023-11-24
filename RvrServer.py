@@ -18,7 +18,7 @@ class RvrServer:
     addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}
     jsonFile = {"speed": 0, "heading": 0, "message": "None"}
-    DT = 1/60
+    DT = 1/30 # simply used to do everything at 30Hz
 
     def __init__(self, ip, port):
         self.stopflag = threading.Event()
@@ -119,7 +119,6 @@ class RvrServer:
         print("driver thread started")
         while not self.stopflag.is_set():
             #print("driver thread running")
-            time.sleep(self.DT)
             self.keepAwake()
 
             message = None
@@ -151,6 +150,7 @@ class RvrServer:
 
             if self.stopflag.is_set():
                 break
+            time.sleep(self.DT)
 
     def sendingMethod(self):
         while not self.stopflag.is_set():
