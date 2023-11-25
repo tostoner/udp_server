@@ -14,11 +14,11 @@ sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 
 class RvrServer:
-    stopflag = False
     addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}
     jsonFile = {"speed": 0, "heading": 0, "message": "None"}
-    DT = 1/30 # simply used to do everything at 30Hz. Trying to limit cpu use
+    UDP_PACKET_SIZE = 60000 # a little smaller than 65000 to compensate for the rest of the json file
+    DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
     def __init__(self, ip, port):
         self.stopflag = threading.Event()
@@ -69,12 +69,24 @@ class RvrServer:
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         print("capture frame resized")
-        
+
+    def determine_frame_parts(self, base64_frame):
+        frame_size = len(base64_frame)
+        num_parts = -(-frame_size // self.UDP_PACKET_SIZE)  # Ceiling division
+        frame_parts = []
+
+        for i in range(num_parts):
+            start_index = i * self.UDP_PACKET_SIZE
+            end_index = start_index + self.UDP_PACKET_SIZE
+            chunk = base64_frame[start_index:end_index]
+            frame_parts.append(chunk)
+
+        return frame_parts
+
 
     def capture_and_compress(self):
         ret, frame = self.camera.read()
         if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             success, encoded_frame = cv2.imencode('.jpg', frame)
             if not success:
                 print("Error encoding frame")
@@ -139,7 +151,7 @@ class RvrServer:
                 self.jsonFile_to_send["videoRunning"] = True
                 #print("self.jsonFile_to_send['videoRunning'] = True")
             elif message == "stop_video":
-                self.jsonFile_to_send["video"] = False
+                self.jsonFile_to_send["videoRunning"] = False
                 #print("self.jsonFile_to_send['videoRunning'] = False")
             elif message == "drive":
                 self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.none.value)
@@ -156,36 +168,31 @@ class RvrServer:
         while not self.stopflag.is_set():
             videoRunning = self.jsonFile_to_send.get("videoRunning")
             if videoRunning:
-                #print("video running")
                 compressed_frame = self.capture_and_compress()
-                self.jsonFile_to_send["frame"] = compressed_frame
-                jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
-                #print(self.addr)
-                self.UDP_send(jsonBytes)
-                #print("Message sent")
-
+                if compressed_frame:
+                    frame_parts = self.determine_frame_parts(compressed_frame)
+                    for i, part in enumerate(frame_parts):
+                        frame_packet = {
+                            "frame_part": part,
+                            "part_number": i,
+                            "total_parts": len(frame_parts)
+                        }
+                        jsonBytes = json.dumps(frame_packet).encode('utf-8')
+                        self.UDP_send(jsonBytes)
             else:
                 jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
                 self.UDP_send(jsonBytes)
-                #print("Video not running, message sent")
-
 
             time.sleep(self.DT)
 
 
-    def UDP_send(self, string):
+    def UDP_send(self, packet):
         if self.addr is not None:
             try:
-                sock = self.sock
-                sock.sendto(string, self.addr)
-                print(f"{sys.getsizeof(string)} bytes sent")
+                self.sock.sendto(packet, self.addr)
+                print(f"Sent {len(packet)} bytes")
             except socket.error as e:
-                frame_size = sys.getsizeof(string) 
-                print("Frame size:", frame_size)
-                print(e)
-                return False
-            return True
-        print("No address to send to")
+                print(f"Error sending packet: {e}")
 
 
     def start_server(self,ip, port):
