@@ -9,13 +9,14 @@ import signal
 import json
 import base64
 import os
+import VL53L1X
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 
 class RvrServer:
     addr = None
-    jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False}
+    jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False, "distance": 0}
     jsonFile = {"speed": 0, "heading": 0, "message": "None"}
     UDP_PACKET_SIZE = 60000 # a little smaller than 65000 to compensate for the rest of the json file
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
@@ -27,6 +28,7 @@ class RvrServer:
         self.sending_queue = queue.Queue()
         self.init_rvr()
         self.init_camera()
+        self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
 
         # Register signal handlers
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -40,6 +42,10 @@ class RvrServer:
     def init_rvr(self):
         self.rvr = SpheroRvrObserver()
         self.rvr.on_did_sleep_notify(handler=self.keepAwake)
+        self.tof.open()
+        print("tof opened")
+        self.tof.start_ranging(1)
+        print("tof started")
 
         print("robot object created")
 
@@ -131,8 +137,11 @@ class RvrServer:
         print("driver thread started")
         while not self.stopflag.is_set():
             #print("driver thread running")
-            self.keepAwake()
 
+
+            self.keepAwake()
+            distance_in_mm = self.tof.get_distance()
+            self.jsonFile_to_send["distance"] = distance_in_mm
             message = None
             try:
                 self.jsonFile = self.reciever_queue.get(block=False)
@@ -146,13 +155,12 @@ class RvrServer:
                 headingInput = self.jsonFile.get("heading")
                 message = self.jsonFile.get("message")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
-
+            if distance_in_mm < 100 and message == "drive":
+                message = "dont_drive"
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
-                #print("self.jsonFile_to_send['videoRunning'] = True")
             elif message == "stop_video":
                 self.jsonFile_to_send["videoRunning"] = False
-                #print("self.jsonFile_to_send['videoRunning'] = False")
             elif message == "drive":
                 self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.none.value)
             elif message == "drive_reverse":
