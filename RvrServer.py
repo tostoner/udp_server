@@ -8,8 +8,9 @@ import time
 import signal
 import json
 import base64
-import os
-import VL53L1X
+import os                       
+import qwiic_i2c                    # I2C bus driver package
+
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
 from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
@@ -21,12 +22,20 @@ class RvrServer:
     UDP_PACKET_SIZE = 60000 # a little smaller than 65000 to compensate for the rest of the json file
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
+
     def __init__(self, ip, port):
         self.stopflag = threading.Event()
         self.sock = self.start_server(ip, port)
         self.reciever_queue = queue.Queue()
         self.sending_queue = queue.Queue()
-        self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
+        qwiic = qwiic.QwiicTCA9548A()
+        qwiic.enable_channels(3)
+        self.tof = VL53L0X.VL53L0X()
+
+
+
+
+
         self.init_rvr()
         self.init_camera()
         
@@ -43,10 +52,8 @@ class RvrServer:
     def init_rvr(self):
         self.rvr = SpheroRvrObserver()
         self.rvr.on_did_sleep_notify(handler=self.keepAwake)
-        self.tof.open()
-        print("tof opened")
-        self.tof.start_ranging(1)
-        print("tof started")
+
+
 
         print("robot object created")
 
