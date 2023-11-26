@@ -218,5 +218,3 @@ class RvrServer:
     def keepAwake(self):
         #print("RVR is trying to sleep, waking up...")
         self.rvr.wake()
-
-        # ... [Other methods continue here]
