@@ -9,7 +9,6 @@ import signal
 import json
 import base64
 import os                       
-import qwiic_i2c                    # I2C bus driver package
 
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
@@ -19,7 +18,7 @@ class RvrServer:
     addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False, "distance": 0}
     jsonFile = {"speed": 0, "heading": 0, "message": "None"}
-    UDP_PACKET_SIZE = 60000 # a little smaller than 65000 to compensate for the rest of the json file
+    UDP_PACKET_SIZE = 60000 # a littlne smaller than 65000 to compensate for the rest of the json file
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
 
@@ -28,11 +27,6 @@ class RvrServer:
         self.sock = self.start_server(ip, port)
         self.reciever_queue = queue.Queue()
         self.sending_queue = queue.Queue()
-        qwiic = qwiic.QwiicTCA9548A()
-        qwiic.enable_channels(3)
-        self.tof = VL53L0X.VL53L0X()
-
-
 
 
 
@@ -148,8 +142,6 @@ class RvrServer:
 
 
             self.keepAwake()
-            distance_in_mm = self.tof.get_distance()
-            self.jsonFile_to_send["distance"] = distance_in_mm
             message = None
             try:
                 self.jsonFile = self.reciever_queue.get(block=False)
@@ -163,8 +155,7 @@ class RvrServer:
                 headingInput = self.jsonFile.get("heading")
                 message = self.jsonFile.get("message")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
-            if distance_in_mm < 100 and message == "drive":
-                message = "dont_drive"
+
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
             elif message == "stop_video":
