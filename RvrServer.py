@@ -26,9 +26,10 @@ class RvrServer:
         self.sock = self.start_server(ip, port)
         self.reciever_queue = queue.Queue()
         self.sending_queue = queue.Queue()
+        self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
         self.init_rvr()
         self.init_camera()
-        self.tof = VL53L1X.VL53L1X(i2c_bus=1, i2c_address=0x29)
+        
 
         # Register signal handlers
         signal.signal(signal.SIGINT, self.signal_handler)
