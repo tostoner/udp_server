@@ -72,7 +72,7 @@ class RvrServer:
 
     def determine_frame_parts(self, base64_frame):
         frame_size = len(base64_frame)
-        num_parts = -(-frame_size // self.UDP_PACKET_SIZE)  # Ceiling division
+        num_parts = -(-frame_size // self.UDP_PACKET_SIZE)
         frame_parts = []
 
         for i in range(num_parts):
