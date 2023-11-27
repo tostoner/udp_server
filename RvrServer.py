@@ -116,7 +116,7 @@ class RvrServer:
             try:
                 data, self.addr = self.sock.recvfrom(4096)
                 data = data.decode("utf-8")
-                #print(f"data recieved {data}")
+                print(f"data recieved {data}")
                 try: 
                     json_data = json.loads(data)
                     if self.reciever_queue.qsize() >= 10:
@@ -219,7 +219,7 @@ class RvrServer:
         if self.addr is not None:
             try:
                 self.sock.sendto(packet, self.addr)
-                print(f"Sent {len(packet)} bytes")
+                #print(f"Sent {len(packet)} bytes")
             except socket.error as e:
                 print(f"Error sending packet: {e}")
 
