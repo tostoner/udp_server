@@ -157,8 +157,8 @@ class RvrServer:
             if self.jsonFile.get("message") != "no input":
                 speedInput = self.jsonFile.get("speed")
                 headingInput = self.jsonFile.get("heading")
-                panInput = self.data.jsonFile.get("pan")
-                tiltInput = self.data.jsonFile.get("tilt")
+                panInput = self.jsonFile.get("pan")
+                tiltInput = self.jsonFile.get("tilt")
                 message = self.jsonFile.get("message")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
