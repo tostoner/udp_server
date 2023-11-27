@@ -157,8 +157,8 @@ class RvrServer:
             if self.jsonFile.get("message") != "no input":
                 speedInput = self.jsonFile.get("speed")
                 headingInput = self.jsonFile.get("heading")
-                panInput = data.jsonFile.get("pan")
-                tiltInput = data.jsonFile.get("tilt")
+                panInput = self.data.jsonFile.get("pan")
+                tiltInput = self.data.jsonFile.get("tilt")
                 message = self.jsonFile.get("message")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
@@ -168,14 +168,14 @@ class RvrServer:
                 pan_input_adjusted = max(min(panInput, 90), -90)
                 # Map the adjusted input value to the servo range with 0 in the middle
                 pan_servo_position = int(pan_input_adjusted * (180 / 90) + 90)
-                servo.move_servo_position(0, pan_servo_position, 180)  # Assuming pan is on pin 0
+                self.servo.move_servo_position(0, pan_servo_position, 180)  # Assuming pan is on pin 0
             
             if tiltInput is not None:
                 # Adjust the input values to be in the range of -90 to 90
                 tilt_input_adjusted = max(min(tiltInput, 90), -90)
                 # Map the adjusted input value to the servo range with 0 in the middle
                 tilt_servo_position = int(tilt_input_adjusted * (180 / 90) + 90)
-                servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
+                self.servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
             
 
             if message == "start_video":
