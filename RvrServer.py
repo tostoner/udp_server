@@ -9,6 +9,7 @@ import signal
 import json
 import base64
 import os                       
+import pi_servo_hat
 
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
@@ -16,7 +17,7 @@ from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 
 class RvrServer:
     addr = None
-    jsonFile_to_send = {"speed": 0, "heading": 0, "message": "None", "frame": 0, "videoRunning": False, "distance": 0}
+    jsonFile_to_send = {"speed": 0, "heading": 0, "tilt" : 0, "pan" :0, "message": "None", "frame": 0, "videoRunning": False, "distance": 0}
     jsonFile = {"speed": 0, "heading": 0, "message": "None"}
     UDP_PACKET_SIZE = 60000 # a littlne smaller than 65000 to compensate for the rest of the json file
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
@@ -153,8 +154,26 @@ class RvrServer:
             if self.jsonFile.get("message") != "no input":
                 speedInput = self.jsonFile.get("speed")
                 headingInput = self.jsonFile.get("heading")
+                panInput = data.jsonFile.get("pan")
+                tiltInput = data.jsonFile.get("tilt")
                 message = self.jsonFile.get("message")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
+
+          # Move the servo motors based on pan and tilt values
+            if panInput is not None:
+                # Adjust the input values to be in the range of -90 to 90
+                pan_input_adjusted = max(min(panInput, 90), -90)
+                # Map the adjusted input value to the servo range with 0 in the middle
+                pan_servo_position = int(pan_input_adjusted * (180 / 90) + 90)
+                servo.move_servo_position(0, pan_servo_position, 180)  # Assuming pan is on pin 0
+            
+            if tiltInput is not None:
+                # Adjust the input values to be in the range of -90 to 90
+                tilt_input_adjusted = max(min(tiltInput, 90), -90)
+                # Map the adjusted input value to the servo range with 0 in the middle
+                tilt_servo_position = int(tilt_input_adjusted * (180 / 90) + 90)
+                servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
+            
 
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
