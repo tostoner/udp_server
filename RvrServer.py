@@ -30,6 +30,9 @@ class RvrServer:
         self.sending_queue = queue.Queue()
 
 
+        # Initialize the PiServoHat object
+        self.servo = pi_servo_hat.PiServoHat()
+        self.servo.restart()
 
         self.init_rvr()
         self.init_camera()
