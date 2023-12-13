@@ -234,7 +234,7 @@ class RvrServer:
     def sendStatusInfo(self):
         # Create a JSON message with distance and battery status
         status_packet = {
-            "distance": self.jsonFile.get("distance"),
+            "distance": self.jsonFile_to_send.get("distance"),
           # "battery_status": self.jsonFile.get("battery_status"),
         }
         jsonBytes = json.dumps(status_packet).encode('utf-8')
