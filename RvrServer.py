@@ -19,7 +19,7 @@ from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 class RvrServer:
     addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0,  "message": "None", "frame": 0, "videoRunning": False, "distance": 0}
-    jsonFile = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" :0, "message": "None"}
+    jsonFile = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "distance": 0, "message": "None"}
     UDP_PACKET_SIZE = 60000 # a littlne smaller than 65000 to compensate for the rest of the json file
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
@@ -30,7 +30,6 @@ class RvrServer:
         self.reciever_queue = queue.Queue()
         self.sending_queue = queue.Queue()
 
-
         # Initialize the PiServoHat object
         self.servo = pi_servo_hat.PiServoHat()
         self.servo.restart()
@@ -39,8 +38,16 @@ class RvrServer:
         self.tof_sensor = qwiic.QwiicVL53L1X()
         if self.tof_sensor.sensor_init() is None:
             print("ToF Sensor online!\n")
-        
+                self.tof_sensor.start_ranging()
+                time.sleep(0.005)
+                distance = self.tof_sensor.get_distance()
+                time.sleep(0.005)
+                self.tof_sensor.stop_ranging()
+                distance_mm = distance
 
+        # Update the initial distance value
+        self.jsonFile_to_send["distance"] = distance_mm
+        
         self.init_rvr()
         self.init_camera()
         
@@ -53,31 +60,11 @@ class RvrServer:
         self.reciever_thread = threading.Thread(target=self.recieverMethod)
         self.sending_thread = threading.Thread(target=self.sendingMethod)
         self.driver_thread = threading.Thread(target=self.driverMethod)
-        
-
-    def distance_below_threshold(self, threshold):
-            try:
-                self.tof_sensor.start_ranging()
-                time.sleep(0.005)
-                distance = self.tof_sensor.get_distance()
-                time.sleep(0.005)
-                self.tof_sensor.stop_ranging()
-    
-                distance_mm = distance
-                print("Distance(mm): %s" % distance_mm)
-    
-                return distance_mm < threshold
-    
-            except Exception as e:
-                print(e)
-                return False
 
     
     def init_rvr(self):
         self.rvr = SpheroRvrObserver()
         self.rvr.on_did_sleep_notify(handler=self.keepAwake)
-
-
 
         print("robot object created")
 
@@ -166,7 +153,6 @@ class RvrServer:
     def driverMethod(self):
         speedInput = 0
         headingInput = 0
-        collisionVariable = 300
         print("driver thread started")
         while not self.stopflag.is_set():
             #print("driver thread running")
@@ -215,13 +201,9 @@ class RvrServer:
                 self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
             elif message =="dont_drive":
                 self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
+            elif message =="collision_detected":
+                self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
 
-            if self.distance_below_threshold(collisionVariable):
-                print("Stopping RVR due to proximity to obstacle.")
-                self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
-
-            
-            
             if self.stopflag.is_set():
                 break
             time.sleep(self.DT)
@@ -244,10 +226,22 @@ class RvrServer:
             else:
                 jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
                 self.UDP_send(jsonBytes)
+            
+        # Corrected method name
+        self.sendStatusInfo()
+        time.sleep(self.DT)
 
-            time.sleep(self.DT)
 
+    def sendStatusInfo(self):
+        # Create a JSON message with distance and battery status
+        status_packet = {
+            "distance": self.jsonFile_to_send.get("distance"),
+          # "battery_status": self.jsonFile_to_send.get("battery_status"),
+        }
+        jsonBytes = json.dumps(status_packet).encode('utf-8')
+        self.UDP_send(jsonBytes)
 
+    
     def UDP_send(self, packet):
         if self.addr is not None:
             try:
