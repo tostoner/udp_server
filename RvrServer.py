@@ -10,6 +10,7 @@ import json
 import base64
 import os                       
 import pi_servo_hat
+import qwiic
 
 
 sys.path.append(os.path.expanduser('/home/micro/sphero-sdk-raspberrypi-python'))
@@ -33,6 +34,12 @@ class RvrServer:
         # Initialize the PiServoHat object
         self.servo = pi_servo_hat.PiServoHat()
         self.servo.restart()
+
+        # Initialize the ToF sensor
+        self.tof_sensor = qwiic.QwiicVL53L1X()
+        if self.tof_sensor.sensor_init() is None:
+            print("ToF Sensor online!\n")
+        
 
         self.init_rvr()
         self.init_camera()
@@ -140,6 +147,7 @@ class RvrServer:
     def driverMethod(self):
         speedInput = 0
         headingInput = 0
+        collisionVariable = 170
         print("driver thread started")
         while not self.stopflag.is_set():
             #print("driver thread running")
@@ -189,6 +197,12 @@ class RvrServer:
             elif message =="dont_drive":
                 self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
 
+            if self.distance_below_threshold(collisionVariable):
+                print("Stopping RVR due to proximity to obstacle.")
+                self.rvr.drive_with_heading(speed=0, flags=DriveFlagsBitmask.none.value)
+
+            
+            
             if self.stopflag.is_set():
                 break
             time.sleep(self.DT)
