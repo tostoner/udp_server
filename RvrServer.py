@@ -44,9 +44,6 @@ class RvrServer:
             time.sleep(0.005)
             self.tof_sensor.stop_ranging()
             distance_mm = distance
-
-            # Update the initial distance value
-            self.jsonFile_to_send["distance"] = distance_mm
         
         self.init_rvr()
         self.init_camera()
@@ -173,6 +170,7 @@ class RvrServer:
                 panInput = self.jsonFile.get("panPosition")
                 tiltInput = self.jsonFile.get("tiltPosition")
                 message = self.jsonFile.get("message")
+                distance = self.jsonFile.get("distance")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
           # Move the servo motors based on pan and tilt values
