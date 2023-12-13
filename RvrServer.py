@@ -53,7 +53,26 @@ class RvrServer:
         self.reciever_thread = threading.Thread(target=self.recieverMethod)
         self.sending_thread = threading.Thread(target=self.sendingMethod)
         self.driver_thread = threading.Thread(target=self.driverMethod)
+        
 
+    def distance_below_threshold(self, threshold):
+            try:
+                self.tof_sensor.start_ranging()
+                time.sleep(0.005)
+                distance = self.tof_sensor.get_distance()
+                time.sleep(0.005)
+                self.tof_sensor.stop_ranging()
+    
+                distance_mm = distance
+                print("Distance(mm): %s" % distance_mm)
+    
+                return distance_mm < threshold
+    
+            except Exception as e:
+                print(e)
+                return False
+
+    
     def init_rvr(self):
         self.rvr = SpheroRvrObserver()
         self.rvr.on_did_sleep_notify(handler=self.keepAwake)
