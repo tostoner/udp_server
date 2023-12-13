@@ -166,7 +166,7 @@ class RvrServer:
     def driverMethod(self):
         speedInput = 0
         headingInput = 0
-        collisionVariable = 170
+        collisionVariable = 300
         print("driver thread started")
         while not self.stopflag.is_set():
             #print("driver thread running")
@@ -218,7 +218,7 @@ class RvrServer:
 
             if self.distance_below_threshold(collisionVariable):
                 print("Stopping RVR due to proximity to obstacle.")
-                self.rvr.drive_with_heading(speed=0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
+                self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
 
             
             
