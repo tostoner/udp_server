@@ -226,8 +226,7 @@ class RvrServer:
             else:
                 jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
                 self.UDP_send(jsonBytes)
-            
-        # Corrected method name
+
         self.sendStatusInfo()
         time.sleep(self.DT)
 
@@ -235,8 +234,8 @@ class RvrServer:
     def sendStatusInfo(self):
         # Create a JSON message with distance and battery status
         status_packet = {
-            "distance": self.jsonFile_to_send.get("distance"),
-          # "battery_status": self.jsonFile_to_send.get("battery_status"),
+            "distance": self.jsonFile.get("distance"),
+          # "battery_status": self.jsonFile.get("battery_status"),
         }
         jsonBytes = json.dumps(status_packet).encode('utf-8')
         self.UDP_send(jsonBytes)
