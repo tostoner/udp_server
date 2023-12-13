@@ -218,7 +218,7 @@ class RvrServer:
 
             if self.distance_below_threshold(collisionVariable):
                 print("Stopping RVR due to proximity to obstacle.")
-                self.rvr.drive_with_heading(speed=0, flags=DriveFlagsBitmask.none.value)
+                self.rvr.drive_with_heading(speed=0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
 
             
             
