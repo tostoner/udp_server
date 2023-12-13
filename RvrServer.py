@@ -34,19 +34,19 @@ class RvrServer:
         self.servo = pi_servo_hat.PiServoHat()
         self.servo.restart()
 
-        # Initialize the ToF sensor
+       # Initialize the ToF sensor
         self.tof_sensor = qwiic.QwiicVL53L1X()
         if self.tof_sensor.sensor_init() is None:
             print("ToF Sensor online!\n")
-                self.tof_sensor.start_ranging()
-                time.sleep(0.005)
-                distance = self.tof_sensor.get_distance()
-                time.sleep(0.005)
-                self.tof_sensor.stop_ranging()
-                distance_mm = distance
+            self.tof_sensor.start_ranging()
+            time.sleep(0.005)
+            distance = self.tof_sensor.get_distance()
+            time.sleep(0.005)
+            self.tof_sensor.stop_ranging()
+            distance_mm = distance
 
-        # Update the initial distance value
-        self.jsonFile_to_send["distance"] = distance_mm
+            # Update the initial distance value
+            self.jsonFile_to_send["distance"] = distance_mm
         
         self.init_rvr()
         self.init_camera()
