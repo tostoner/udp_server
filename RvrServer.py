@@ -93,8 +93,8 @@ class RvrServer:
     def init_camera(self):
         self.camera = cv2.VideoCapture(0)
         print("camera started")
-        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 160)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 120)
         print("capture frame resized")
 
     def determine_frame_parts(self, base64_frame):
