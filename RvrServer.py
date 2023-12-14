@@ -29,7 +29,6 @@ class RvrServer:
         self.stopflag = threading.Event()
         self.sock = self.start_server(ip, port)
         self.reciever_queue = queue.Queue()
-        self.sending_queue = queue.Queue()
 
         # Initialize the PiServoHat object
         self.servo = pi_servo_hat.PiServoHat()
