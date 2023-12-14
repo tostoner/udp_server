@@ -155,15 +155,13 @@ class RvrServer:
     def driverMethod(self):
         def update_jsonFile_to_send(self):
             self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
-
+            
             # Function to handle the battery percentage response
             def battery_percentage_handler(battery_percentage):
                 self.jsonFile_to_send["battery"] = battery_percentage
 
             # Get the current battery percentage
             self.rvr.get_battery_percentage(battery_percentage_handler)
-
-            
         
         speedInput = 0
         headingInput = 0
@@ -171,7 +169,6 @@ class RvrServer:
 
         while not self.stopflag.is_set():
             #print("driver thread running")
-
 
             self.keepAwake()
             message = None
@@ -188,7 +185,6 @@ class RvrServer:
                 panInput = self.jsonFile_recieved.get("panPosition")
                 tiltInput = self.jsonFile_recieved.get("tiltPosition")
                 message = self.jsonFile_recieved.get("message")
-                distance = self.jsonFile_recieved.get("distance")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
           # Move the servo motors based on pan and tilt values
@@ -207,7 +203,8 @@ class RvrServer:
                 self.servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
             
             update_jsonFile_to_send(self)
-
+            if self.tof_sensor.get_distance() < 500:
+                speedInput = 0
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
             elif message == "stop_video":
