@@ -176,7 +176,7 @@ class RvrServer:
                 
             except queue.Empty:
                 #print("Queue empty")
-                self.jsonFile_recieved[message] = "no input"
+                self.jsonFile_recieved["message"] = "no input"
 
             if self.jsonFile_recieved.get("message") != "no input":
                 speedInput = self.jsonFile_recieved.get("speed")
