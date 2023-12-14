@@ -134,7 +134,6 @@ class RvrServer:
                 try: 
                     json_data = json.loads(data)
                     if self.reciever_queue.qsize() >= 2:
-                        # This will remove the oldest item from the queue
                         self.reciever_queue.get_nowait()
                     
                     self.reciever_queue.put((json_data))
@@ -169,6 +168,7 @@ class RvrServer:
             message = None
             try:
                 self.jsonFile_recieved = self.reciever_queue.get(block=False)
+                self.reciever_queue.pop()
                 
             except queue.Empty:
                 #print("Queue empty")
@@ -237,7 +237,7 @@ class RvrServer:
                         self.UDP_send(jsonBytes2)
                         print(self.jsonFile_to_send)
             else:
-
+                
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 self.UDP_send(jsonBytes)
                 print(self.jsonFile_to_send)
