@@ -125,6 +125,8 @@ class RvrServer:
             return None
 
     def recieverMethod(self):
+        self.sock.setblocking(False)
+
         while not self.stopflag.is_set():
             time.sleep(self.DT)
             try:
@@ -134,14 +136,17 @@ class RvrServer:
                 try: 
                     json_data = json.loads(data)
                     if self.reciever_queue.qsize() >= 2:
+                        #remove the oldest item 
                         self.reciever_queue.get_nowait()
                     
                     self.reciever_queue.put((json_data))
                 except ValueError:
                     print("Error: Value converting to json")
                 
-            except OSError as e:
-                print(f"Socket error: {str(e)}")
+            except BlockingIOError as e:
+                print(f"No data recieved: {e}")
+                time.sleep(0.1)
+                pass
             if self.stopflag.is_set():
                 break
 
@@ -168,7 +173,6 @@ class RvrServer:
             message = None
             try:
                 self.jsonFile_recieved = self.reciever_queue.get(block=False)
-                self.reciever_queue.pop()
                 
             except queue.Empty:
                 #print("Queue empty")
