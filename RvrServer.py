@@ -24,6 +24,7 @@ class RvrServer:
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
 
+
     def __init__(self, ip, port):
         self.stopflag = threading.Event()
         self.sock = self.start_server(ip, port)
@@ -78,12 +79,19 @@ class RvrServer:
             print("leds set")
             self.rvr.reset_yaw()
             print("yaw reset")
-            def battery_percentage_handler(percentage):
-                print(f"Battery Percentage: {percentage}%")
-            self.rvr.get_battery_percentage(battery_percentage_handler, timeout=100)
+
+            print(self.rvr.get_battery_percentage(self.battery_percentage_handler, timeout=100))
             print("RVR initialized")
         except Exception as e:
             print(f"Error initializing RVR: {e}")
+
+    def battery_percentage_handler(self, battery_percentage):
+        self.jsonFile_to_send["battery"] = battery_percentage
+
+    def update_jsonFile_to_send(self):
+        self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
+        self.rvr.get_battery_percentage(self.battery_percentage_handler)
+
 
     def init_camera(self):
         self.camera = cv2.VideoCapture(0)
@@ -149,7 +157,15 @@ class RvrServer:
     def driverMethod(self):
         def update_jsonFile_to_send(self):
             self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
-            self.jsonFile_to_send["battery_level"] = self.rvr.get_battery_percentage(battery_percentage_handler,timeout = 1)
+
+            # Function to handle the battery percentage response
+            def battery_percentage_handler(battery_percentage):
+                self.jsonFile_to_send["battery"] = battery_percentage
+
+            # Get the current battery percentage
+            self.rvr.get_battery_percentage(battery_percentage_handler)
+
+            
         
         speedInput = 0
         headingInput = 0
@@ -192,7 +208,7 @@ class RvrServer:
                 tilt_servo_position = int(tilt_input_adjusted * (180 / 90) + 90)
                 self.servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
             
-            update_jsonFile_to_send()
+            update_jsonFile_to_send(self)
 
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
