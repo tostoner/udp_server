@@ -38,13 +38,11 @@ class RvrServer:
        # Initialize the ToF sensor
         self.tof_sensor = qwiic.QwiicVL53L1X()
         if self.tof_sensor.sensor_init() is None:
-            print("ToF Sensor online!\n")
             self.tof_sensor.start_ranging()
+            print("ToF Sensor online!\n")
             time.sleep(0.005)
             distance = self.tof_sensor.get_distance()
-            time.sleep(0.005)
-            self.tof_sensor.stop_ranging()
-            distance_mm = distance
+
         
         self.init_rvr()
         self.init_camera()
@@ -280,6 +278,7 @@ class RvrServer:
         self.camera.release()
         self.sock.close()
         self.rvr.close()
+        self.tof_sensor.stop_ranging()
 
     def signal_handler(self, signal_received, frame):
         print('Signal received, shutting down!')
