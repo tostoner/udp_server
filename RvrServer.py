@@ -125,6 +125,8 @@ class RvrServer:
             return None
 
     def recieverMethod(self):
+            print("reciever thread started")
+            
             while not self.stopflag.is_set():
                 time.sleep(self.DT)
                 try:
@@ -133,7 +135,7 @@ class RvrServer:
                     print(f"data recieved {data}")
                     try: 
                         json_data = json.loads(data)
-                        if self.reciever_queue.qsize() >= 2:
+                        if self.reciever_queue.qsize() >= 10:
                             self.reciever_queue.get_nowait()
                         
                         self.reciever_queue.put((json_data))
