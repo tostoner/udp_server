@@ -20,7 +20,7 @@ class RvrServer:
     addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0,  "message": "None", "videoRunning": False, "distance": 0}
     jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
-    UDP_PACKET_SIZE = 64000 # a littlne smaller than 65000 to compensate for the rest of the json file
+    UDP_PACKET_SIZE = 10000 # a littlne smaller than 65000 to compensate for the rest of the json file
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
 
@@ -247,7 +247,6 @@ class RvrServer:
                 print(self.jsonFile_to_send)
 
             time.sleep(self.DT)
-
 
 
     def UDP_send(self, packet):
