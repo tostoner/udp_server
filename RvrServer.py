@@ -187,6 +187,7 @@ class RvrServer:
                 tilt_servo_position = int(tilt_input_adjusted * (180 / 90) + 90)
                 self.servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
             
+            update_jsonFile_to_send()
 
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
@@ -234,13 +235,11 @@ class RvrServer:
         time.sleep(self.DT)
 
 
-    def updateStatus(self):
-        self.jsonFile_to_send["speed"] = self.rvr.get_current_velocity()
-        self.jsonFile_to_send["heading"] = self.rvr.get_heading()
+    def update_jsonFile_to_send(self):
         self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
+        self.jsonFile_to_send["battery_level"] = self.rvr.get_battery_percentage(battery_percentage_handler)
         
 
-    
     def UDP_send(self, packet):
         if self.addr is not None:
             try:
@@ -251,7 +250,6 @@ class RvrServer:
 
 
     def start_server(self,ip, port):
-        
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
         sock.bind((ip, port))
