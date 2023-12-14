@@ -161,6 +161,8 @@ class RvrServer:
         
         speedInput = 0
         headingInput = 0
+        panInput = None
+        tiltInput = None
         print("driver thread started")
 
         while not self.stopflag.is_set():
