@@ -135,10 +135,11 @@ class RvrServer:
                     print(f"data recieved {data}")
                     try: 
                         json_data = json.loads(data)
+                        self.reciever_queue.put((json_data))
+
                         if self.reciever_queue.qsize() >= 10:
                             self.reciever_queue.get_nowait()
                         
-                        self.reciever_queue.put((json_data))
                     except ValueError:
                         print("Error: Value converting to json")
                     
@@ -239,11 +240,13 @@ class RvrServer:
                         jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
                         self.UDP_send(jsonBytes2)
                         #print(self.jsonFile_to_send)
+                        print(f"Sent {len(jsonBytes2)} bytes")
             else:
                 
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 self.UDP_send(jsonBytes)
                 #print(self.jsonFile_to_send)
+                print(f"Sent {len(jsonBytes)} bytes")
 
             time.sleep(self.DT)
 
