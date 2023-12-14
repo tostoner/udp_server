@@ -41,7 +41,6 @@ class RvrServer:
             self.tof_sensor.start_ranging()
             print("ToF Sensor online!\n")
             time.sleep(0.005)
-            distance = self.tof_sensor.get_distance()
 
         
         self.init_rvr()
@@ -134,7 +133,7 @@ class RvrServer:
                 print(f"data recieved {data}")
                 try: 
                     json_data = json.loads(data)
-                    if self.reciever_queue.qsize() >= 10:
+                    if self.reciever_queue.qsize() >= 2:
                         # This will remove the oldest item from the queue
                         self.reciever_queue.get_nowait()
                     
