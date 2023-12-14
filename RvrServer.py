@@ -234,12 +234,12 @@ class RvrServer:
                         self.UDP_send(jsonBytes)
                         jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
                         self.UDP_send(jsonBytes2)
-                        print(self.jsonFile_to_send)
+                        #print(self.jsonFile_to_send)
             else:
                 
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 self.UDP_send(jsonBytes)
-                print(self.jsonFile_to_send)
+                #print(self.jsonFile_to_send)
 
             time.sleep(self.DT)
 
