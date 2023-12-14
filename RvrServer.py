@@ -147,9 +147,14 @@ class RvrServer:
         self.sending_thread.start()
 
     def driverMethod(self):
+        def update_jsonFile_to_send(self):
+            self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
+            self.jsonFile_to_send["battery_level"] = self.rvr.get_battery_percentage(battery_percentage_handler,timeout = 1)
+        
         speedInput = 0
         headingInput = 0
         print("driver thread started")
+
         while not self.stopflag.is_set():
             #print("driver thread running")
 
@@ -234,10 +239,7 @@ class RvrServer:
         time.sleep(self.DT)
 
 
-    def update_jsonFile_to_send(self):
-        self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
-        self.jsonFile_to_send["battery_level"] = self.rvr.get_battery_percentage(battery_percentage_handler)
-        
+
 
     def UDP_send(self, packet):
         if self.addr is not None:
