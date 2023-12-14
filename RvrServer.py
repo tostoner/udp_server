@@ -235,13 +235,10 @@ class RvrServer:
 
 
     def updateStatus(self):
-        #self.jsonFile_to_send["speed"] = self.rvr.get_current_velocity()
-        #self.jsonFile_to_send["heading"] = self.rvr.get_heading()
-        #self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
+        self.jsonFile_to_send["speed"] = self.rvr.get_current_velocity()
+        self.jsonFile_to_send["heading"] = self.rvr.get_heading()
+        self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
         
-        self.jsonFile_to_send["speed"] = "1"
-        self.jsonFile_to_send["heading"] = "2"
-        self.jsonFile_to_send["distance"] = "69"
 
     
     def UDP_send(self, packet):
