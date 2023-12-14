@@ -219,17 +219,16 @@ class RvrServer:
                             "part_number": i,
                             "total_parts": len(frame_parts)
                         }
-                        self.updateStatus()
+
                         jsonBytes = json.dumps(frame_packet).encode('utf-8')
                         self.UDP_send(jsonBytes)
                         jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
                         self.UDP_send(jsonBytes2)
             else:
-                self.updateStatus()
+
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 self.UDP_send(jsonBytes)
-                jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
-                self.UDP_send(jsonBytes2)
+
 
 
         time.sleep(self.DT)
