@@ -19,8 +19,8 @@ from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 class RvrServer:
     addr = None
     jsonFile_to_send = {"speed": 0, "heading": 0,  "message": "None", "videoRunning": False, "distance": 0}
-    jsonFile = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "distance": 0, "message": "None"}
-    UDP_PACKET_SIZE = 60000 # a littlne smaller than 65000 to compensate for the rest of the json file
+    jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
+    UDP_PACKET_SIZE = 64000 # a littlne smaller than 65000 to compensate for the rest of the json file
     DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
 
@@ -120,7 +120,6 @@ class RvrServer:
             return None
 
     def recieverMethod(self):
-
         while not self.stopflag.is_set():
             time.sleep(self.DT)
             try:
@@ -158,19 +157,19 @@ class RvrServer:
             self.keepAwake()
             message = None
             try:
-                self.jsonFile = self.reciever_queue.get(block=False)
+                self.jsonFile_recieved = self.reciever_queue.get(block=False)
                 
             except queue.Empty:
                 #print("Queue empty")
-                self.jsonFile[message] = "no input"
+                self.jsonFile_recieved[message] = "no input"
 
-            if self.jsonFile.get("message") != "no input":
-                speedInput = self.jsonFile.get("speed")
-                headingInput = self.jsonFile.get("heading")
-                panInput = self.jsonFile.get("panPosition")
-                tiltInput = self.jsonFile.get("tiltPosition")
-                message = self.jsonFile.get("message")
-                distance = self.jsonFile.get("distance")
+            if self.jsonFile_recieved.get("message") != "no input":
+                speedInput = self.jsonFile_recieved.get("speed")
+                headingInput = self.jsonFile_recieved.get("heading")
+                panInput = self.jsonFile_recieved.get("panPosition")
+                tiltInput = self.jsonFile_recieved.get("tiltPosition")
+                message = self.jsonFile_recieved.get("message")
+                distance = self.jsonFile_recieved.get("distance")
                 #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
 
           # Move the servo motors based on pan and tilt values
@@ -219,24 +218,30 @@ class RvrServer:
                             "part_number": i,
                             "total_parts": len(frame_parts)
                         }
+                        self.updateStatus()
                         jsonBytes = json.dumps(frame_packet).encode('utf-8')
                         self.UDP_send(jsonBytes)
+                        jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
+                        self.UDP_send(jsonBytes2)
             else:
-                jsonBytes = json.dumps(self.jsonFile).encode('utf-8')
+                self.updateStatus()
+                jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 self.UDP_send(jsonBytes)
+                jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
+                self.UDP_send(jsonBytes2)
 
-        self.sendStatusInfo()
+
         time.sleep(self.DT)
 
 
-    def sendStatusInfo(self):
-        # Create a JSON message with distance and battery status
-        status_packet = {
-            "distance": self.jsonFile_to_send.get("distance"),
-          # "battery_status": self.jsonFile.get("battery_status"),
-        }
-        jsonBytes = json.dumps(status_packet).encode('utf-8')
-        self.UDP_send(jsonBytes)
+    def updateStatus(self):
+        #self.jsonFile_to_send["speed"] = self.rvr.get_current_velocity()
+        #self.jsonFile_to_send["heading"] = self.rvr.get_heading()
+        #self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
+        
+        self.jsonFile_to_send["speed"] = "1"
+        self.jsonFile_to_send["heading"] = "2"
+        self.jsonFile_to_send["distance"] = "69"
 
     
     def UDP_send(self, packet):
