@@ -203,7 +203,7 @@ class RvrServer:
                 self.servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
             
             update_jsonFile_to_send(self)
-            if self.tof_sensor.get_distance() < 500:
+            if (self.tof_sensor.get_distance() < 500) and message == "drive":
                 speedInput = 0
             if message == "start_video":
                 self.jsonFile_to_send["videoRunning"] = True
@@ -234,7 +234,7 @@ class RvrServer:
                             "frame_part": part,
                             "part_number": i,
                             "total_parts": len(frame_parts)
-                        }
+                            }
 
                         jsonBytes = json.dumps(frame_packet).encode('utf-8')
                         self.UDP_send(jsonBytes)
