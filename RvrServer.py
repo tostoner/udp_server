@@ -92,8 +92,8 @@ class RvrServer:
     def init_camera(self):
         self.camera = cv2.VideoCapture(0)
         print("camera started")
-        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 160)
-        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 120)
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         print("capture frame resized")
 
     def determine_frame_parts(self, base64_frame):
@@ -236,10 +236,12 @@ class RvrServer:
 
                         jsonBytes = json.dumps(frame_packet).encode('utf-8')
                         self.UDP_send(jsonBytes)
+                        print(f"Sent1 {len(jsonBytes)} bytes")
+
                         jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
                         self.UDP_send(jsonBytes2)
                         #print(self.jsonFile_to_send)
-                        print(f"Sent {len(jsonBytes2)} bytes")
+                        print(f"Sent2 {len(jsonBytes2)} bytes")
             else:
                 
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
