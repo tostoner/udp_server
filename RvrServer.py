@@ -247,11 +247,7 @@ class RvrServer:
                 self.UDP_send(jsonBytes)
                 print(self.jsonFile_to_send)
 
-
-
-
-        time.sleep(self.DT)
-
+            time.sleep(self.DT)
 
 
 
