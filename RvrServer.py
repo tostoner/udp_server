@@ -84,7 +84,7 @@ class RvrServer:
             print(f"Error initializing RVR: {e}")
 
     def battery_percentage_handler(self, battery_percentage):
-        self.jsonFile_to_send["battery_level"] = battery_percentage
+        self.jsonFile_to_send["battery_level"] = battery_percentage['percentage']
 
     def update_jsonFile_to_send(self):
         self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
