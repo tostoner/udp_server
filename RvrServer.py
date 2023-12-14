@@ -113,6 +113,7 @@ class RvrServer:
     def capture_and_compress(self):
         ret, frame = self.camera.read()
         if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             success, encoded_frame = cv2.imencode('.jpg', frame)
             if not success:
                 print("Error encoding frame")
