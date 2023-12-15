@@ -128,6 +128,7 @@ class RvrServer:
             
             while not self.stopflag.is_set():
                 time.sleep(self.DT)
+                start_time = time.time()
                 try:
                     data, self.addr = self.sock.recvfrom(4096)
                     data = data.decode("utf-8")
@@ -146,6 +147,9 @@ class RvrServer:
                     print(f"Socket error: {str(e)}")
                 if self.stopflag.is_set():
                     break
+                end_time = time.time() 
+                duration = end_time - start_time  
+                print(f"Receiver Iteration time: {duration:.6f} seconds") 
     def moveServo(self,tilt,pan): 
         # Move the servo motors based on pan and tilt values
         if pan is not None:
@@ -186,7 +190,7 @@ class RvrServer:
         def update_jsonFile_to_send(self):
             self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
             self.rvr.get_battery_percentage(self.battery_percentage_handler)
-        
+        start_time = time.time()
         speedInput = 0
         headingInput = 0
         panInput = None
@@ -218,10 +222,14 @@ class RvrServer:
 
             if self.stopflag.is_set():
                 break
+            end_time = time.time() 
+            duration = end_time - start_time  
+            print(f"Driver Iteration time: {duration:.6f} seconds") 
             time.sleep(self.DT)
 
     def sendingMethod(self):
         while not self.stopflag.is_set():
+            start_time = time.time()
             videoRunning = self.jsonFile_to_send.get("videoRunning")
             if videoRunning:
                 compressed_frame = self.capture_and_compress()
@@ -248,7 +256,9 @@ class RvrServer:
                 self.UDP_send(jsonBytes)
                 #print(self.jsonFile_to_send)
                 print(f"Sent {len(jsonBytes)} bytes")
-
+            end_time = time.time() 
+            duration = end_time - start_time  
+            print(f"Sending Iteration time: {duration:.6f} seconds") 
             time.sleep(self.DT)
 
 
