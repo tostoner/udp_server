@@ -22,9 +22,9 @@ class RvrServer:
     jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
     UDP_PACKET_SIZE = 64000
     DT = 1/1000 #Simply used to do everything at 30Hz. Trying to limit cpu use
-    jpeg_quality = 50 # from 0 to 100
-    frame_width = 320
-    frame_height = 240
+    jpeg_quality = 100 # from 0 to 100
+    frame_width = 160
+    frame_height = 120
 
 
 
