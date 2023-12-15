@@ -170,20 +170,17 @@ class RvrServer:
 
             self.keepAwake()
             message = None
-            try:
+            if not self.reciever_queue.empty():
                 self.jsonFile_recieved = self.reciever_queue.get(block=False)
-                
-            except queue.Empty:
-                #print("Queue empty")
-                self.jsonFile_recieved["message"] = "no input"
-
-            if self.jsonFile_recieved.get("message") != "no input":
                 speedInput = self.jsonFile_recieved.get("speed")
                 headingInput = self.jsonFile_recieved.get("heading")
                 panInput = self.jsonFile_recieved.get("panPosition")
                 tiltInput = self.jsonFile_recieved.get("tiltPosition")
                 message = self.jsonFile_recieved.get("message")
-                #print(f"Message: {message}, Speed: {speedInput}, Heading: {headingInput}")
+            else:
+                self.jsonFile_recieved["message"] = "no input"
+                message = "no input"
+
 
           # Move the servo motors based on pan and tilt values
             if panInput is not None:
