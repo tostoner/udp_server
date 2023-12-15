@@ -18,7 +18,7 @@ from sphero_sdk import SpheroRvrObserver, RvrLedGroups, DriveFlagsBitmask
 
 class RvrServer:
     addr = None
-    jsonFile_to_send = {"speed": 0, "heading": 0,  "message": "None", "videoRunning": False, "distance": 0}
+    jsonFile_to_send = {"speed": 0, "heading": 0,  "message": "None", "videoRunning": True, "distance": 0}
     jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
     UDP_PACKET_SIZE = 64000
     DT = 1/1000 #Simply used to do everything at 30Hz. Trying to limit cpu use
@@ -208,7 +208,9 @@ class RvrServer:
             start_time = time.time()
             self.keepAwake()
             message = None
+
             if not self.reciever_queue.empty():
+                #print("reciever queue not empty")
                 self.jsonFile_recieved = self.reciever_queue.get(block=False)
                 speedInput = self.jsonFile_recieved.get("speed")
                 headingInput = self.jsonFile_recieved.get("heading")
@@ -219,11 +221,9 @@ class RvrServer:
                 self.jsonFile_recieved["message"] = "no input"
                 message = "no input"
 
-
+            update_jsonFile_to_send(self)
             self.moveServo(tiltInput,panInput)
             self.moveRobot(speedInput,headingInput, message)
-            update_jsonFile_to_send(self)
-            
 
 
             if self.stopflag.is_set():
