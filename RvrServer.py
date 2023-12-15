@@ -133,7 +133,7 @@ class RvrServer:
                 try:
                     data, self.addr = self.sock.recvfrom(4096)
                     data = data.decode("utf-8")
-                    #print(f"data recieved {data}")
+                    print(f"data recieved {data}")
                     try: 
                         json_data = json.loads(data)
                         self.reciever_queue.put((json_data))
@@ -151,7 +151,7 @@ class RvrServer:
                 end_time = time.time() 
                 duration = end_time - start_time  
                 print(f"Receiver Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
-                time.sleep(1/25)
+                time.sleep(1/50)
 
 
     def moveServo(self,tilt,pan): 
@@ -171,7 +171,7 @@ class RvrServer:
 
     def moveRobot(self,speed_,heading_, message):
         if (self.tof_sensor.get_distance() < 500) and message == "drive":
-                speedInput = 0
+            speedInput = 0
         if message == "start_video":
             self.jsonFile_to_send["videoRunning"] = True
         elif message == "stop_video":
