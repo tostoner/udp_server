@@ -133,7 +133,7 @@ class RvrServer:
                 try:
                     data, self.addr = self.sock.recvfrom(4096)
                     data = data.decode("utf-8")
-                    print(f"data recieved {data}")
+                    #print(f"data recieved {data}")
                     try: 
                         json_data = json.loads(data)
                         self.reciever_queue.put((json_data))
