@@ -23,7 +23,7 @@ class RvrServer:
     UDP_PACKET_SIZE = 64000
     DT = 1/1000 #Simply used to do everything at 30Hz. Trying to limit cpu use
     jpeg_quality = 50 # from 0 to 100
-    frame_widh = 320
+    frame_width = 320
     frame_height = 240
 
 
