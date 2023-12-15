@@ -244,18 +244,18 @@ class RvrServer:
 
                         jsonBytes = json.dumps(frame_packet).encode('utf-8')
                         self.UDP_send(jsonBytes)
-                        print(f"Sent1 {len(jsonBytes)} bytes")
+                        #print(f"Sent1 {len(jsonBytes)} bytes")
 
                         jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
                         self.UDP_send(jsonBytes2)
                         #print(self.jsonFile_to_send)
-                        print(f"Sent2 {len(jsonBytes2)} bytes")
+                        #print(f"Sent2 {len(jsonBytes2)} bytes")
             else:
                 
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 self.UDP_send(jsonBytes)
                 #print(self.jsonFile_to_send)
-                print(f"Sent {len(jsonBytes)} bytes")
+                #print(f"Sent {len(jsonBytes)} bytes")
             end_time = time.time() 
             duration = end_time - start_time  
             print(f"Sending Iteration time: {duration:.6f} seconds") 
