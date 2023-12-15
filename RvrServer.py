@@ -217,7 +217,7 @@ class RvrServer:
                 self.jsonFile_recieved["message"] = "no input"
                 message = "no input"
 
-            self.update_jsonFile_to_send(self)
+            self.update_jsonFile_to_send()
             self.moveServo(tiltInput,panInput)
             self.moveRobot(speedInput,headingInput, message)
 
