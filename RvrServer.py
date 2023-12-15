@@ -134,7 +134,7 @@ class RvrServer:
                 try:
                     data, self.addr = self.sock.recvfrom(4096)
                     data = data.decode("utf-8")
-                    #print(f"data recieved {data}")
+                    print(f"data recieved {data}")
                     try: 
                         json_data = json.loads(data)
                         self.reciever_queue.put((json_data))
@@ -181,19 +181,18 @@ class RvrServer:
             self.rvr.drive_with_heading(speed = speed_, heading = heading_, flags=DriveFlagsBitmask.drive_reverse.value)
         elif message =="dont_drive":
             self.rvr.drive_with_heading(speed = 0, heading = heading_, flags=DriveFlagsBitmask.none.value)
-        elif message =="collision_detected":
-            self.rvr.drive_with_heading(speed = 0, heading = heading_, flags=DriveFlagsBitmask.none.value)
 
+    def update_jsonFile_to_send(self):
+        self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
+        self.rvr.get_battery_percentage(self.battery_percentage_handler)
+        
     def run(self):
         self.reciever_thread.start()
         self.driver_thread.start()
         self.sending_thread.start()
 
     def driverMethod(self):
-        def update_jsonFile_to_send(self):
-            self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
-            self.rvr.get_battery_percentage(self.battery_percentage_handler)
-        
+       
         speedInput = 0
         headingInput = 0
         panInput = None
@@ -263,7 +262,7 @@ class RvrServer:
         if self.addr is not None:
             try:
                 self.sock.sendto(packet, self.addr)
-                #print(f"Sent {len(packet)} bytes")
+                print(f"Sent {len(packet)} bytes")
             except socket.error as e:
                 print(f"Error sending packet: {e}")
 
