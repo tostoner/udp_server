@@ -22,7 +22,9 @@ class RvrServer:
     jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
     UDP_PACKET_SIZE = 64000
     DT = 1/1000 #Simply used to do everything at 30Hz. Trying to limit cpu use
-    jpeg_quality = 10
+    jpeg_quality = 50 # from 0 to 100
+    frame_widh = 320
+    frame_height = 240
 
 
 
@@ -93,8 +95,8 @@ class RvrServer:
     def init_camera(self):
         self.camera = cv2.VideoCapture(0)
         print("camera started")
-        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_width)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_height)
         print("capture frame resized")
 
     def determine_frame_parts(self, base64_frame):
