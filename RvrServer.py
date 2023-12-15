@@ -203,6 +203,8 @@ class RvrServer:
         while not self.stopflag.is_set():
             #print("driver thread running")
             self.keepAwake()
+            self.tof_sensor.start_ranging()
+            
             message = None
 
             if not self.reciever_queue.empty():
