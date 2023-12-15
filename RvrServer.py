@@ -27,7 +27,6 @@ class RvrServer:
     frame_height = 120
 
 
-
     def __init__(self, ip, port):
         self.stopflag = threading.Event()
         self.sock = self.start_server(ip, port)
@@ -197,7 +196,6 @@ class RvrServer:
         headingInput = 0
         panInput = None
         tiltInput = None
-         
         print("driver thread started")
 
         while not self.stopflag.is_set():
