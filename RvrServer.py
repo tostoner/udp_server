@@ -169,7 +169,7 @@ class RvrServer:
             self.servo.move_servo_position(1, tilt_servo_position, 180) 
 
     def moveRobot(self,speed_,heading_, message):
-        if (self.tof_sensor.get_distance() < 500) and message == "drive":
+        if (self.jsonFile_to_send["distance"] < 500) and message == "drive":
             speedInput = 0
         if message == "start_video":
             self.jsonFile_to_send["videoRunning"] = True
@@ -204,7 +204,7 @@ class RvrServer:
             #print("driver thread running")
             self.keepAwake()
             self.tof_sensor.start_ranging()
-            
+
             message = None
 
             if not self.reciever_queue.empty():
