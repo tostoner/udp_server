@@ -21,7 +21,7 @@ class RvrServer:
     jsonFile_to_send = {"speed": 0, "heading": 0,  "message": "None", "videoRunning": True, "distance": 0}
     jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
     UDP_PACKET_SIZE = 64000
-    DT = 1/1000 #Simply used to do everything at 30Hz. Trying to limit cpu use
+    DT = 1/1000 #Trying to limit cpu use by sleeping threads.
     jpeg_quality = 100 # from 0 to 100
     frame_width = 160
     frame_height = 120
@@ -128,11 +128,9 @@ class RvrServer:
 
     def recieverMethod(self):
             print("reciever thread started")
-            iterationcounter = 0
+             
             while not self.stopflag.is_set():
                 time.sleep(self.DT)
-                iterationcounter += 1
-                start_time = time.time()
                 try:
                     data, self.addr = self.sock.recvfrom(4096)
                     data = data.decode("utf-8")
@@ -151,9 +149,7 @@ class RvrServer:
                     print(f"Socket error: {str(e)}")
                 if self.stopflag.is_set():
                     break
-                end_time = time.time() 
-                duration = end_time - start_time  
-                print(f"Receiver Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
+
                 time.sleep(1/50)
 
 
@@ -202,13 +198,11 @@ class RvrServer:
         headingInput = 0
         panInput = None
         tiltInput = None
-        iterationcounter = 0
+         
         print("driver thread started")
 
         while not self.stopflag.is_set():
             #print("driver thread running")
-            iterationcounter += 1
-            start_time = time.time()
             self.keepAwake()
             message = None
 
@@ -231,9 +225,7 @@ class RvrServer:
 
             if self.stopflag.is_set():
                 break
-            end_time = time.time() 
-            duration = end_time - start_time  
-            print(f"Driver Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
+
             time.sleep(self.DT)
 
     def dump_and_send_json(self, json_data):
@@ -242,10 +234,8 @@ class RvrServer:
         #print(f"Sent {len(jsonBytes)} bytes")
 
     def sendingMethod(self):
-        iterationcounter = 0
+         
         while not self.stopflag.is_set():
-            iterationcounter += 1
-            start_time = time.time()
             videoRunning = self.jsonFile_to_send.get("videoRunning")
             if videoRunning:
 
@@ -265,9 +255,7 @@ class RvrServer:
             else:
                 self.dump_and_send_json(self.jsonFile_to_send)
 
-            end_time = time.time() 
-            duration = end_time - start_time  
-            print(f"Sending Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
+
             time.sleep(self.DT)
 
 
