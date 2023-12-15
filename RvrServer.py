@@ -22,6 +22,7 @@ class RvrServer:
     jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
     UDP_PACKET_SIZE = 64000
     DT = 1/1000 #Simply used to do everything at 30Hz. Trying to limit cpu use
+    jpeg_quality = 10
 
 
 
@@ -113,7 +114,7 @@ class RvrServer:
     def capture_and_compress(self):
         ret, frame = self.camera.read()
         if ret:
-            success, encoded_frame = cv2.imencode('.jpg', frame)
+            success, encoded_frame = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpeg_quality])
             if not success:
                 print("Error encoding frame")
                 return None
@@ -133,7 +134,7 @@ class RvrServer:
                 try:
                     data, self.addr = self.sock.recvfrom(4096)
                     data = data.decode("utf-8")
-                    print(f"data recieved {data}")
+                    #print(f"data recieved {data}")
                     try: 
                         json_data = json.loads(data)
                         self.reciever_queue.put((json_data))
@@ -240,6 +241,7 @@ class RvrServer:
             start_time = time.time()
             videoRunning = self.jsonFile_to_send.get("videoRunning")
             if videoRunning:
+
                 compressed_frame = self.capture_and_compress()
                 if compressed_frame:
                     frame_parts = self.determine_frame_parts(compressed_frame)
@@ -259,11 +261,11 @@ class RvrServer:
                         #print(self.jsonFile_to_send)
                         #print(f"Sent2 {len(jsonBytes2)} bytes")
             else:
-                
+
                 jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
                 self.UDP_send(jsonBytes)
-                #print(self.jsonFile_to_send)
-                #print(f"Sent {len(jsonBytes)} bytes")
+                print(self.jsonFile_to_send)
+                print(f"Sent {len(jsonBytes)} bytes")
             end_time = time.time() 
             duration = end_time - start_time  
             print(f"Sending Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
