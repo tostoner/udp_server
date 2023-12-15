@@ -146,6 +146,36 @@ class RvrServer:
                     print(f"Socket error: {str(e)}")
                 if self.stopflag.is_set():
                     break
+    def moveServo(self,tilt,pan): 
+        # Move the servo motors based on pan and tilt values
+        if pan is not None:
+            # Adjust the input values to be in the range of -90 to 90
+            pan_input_adjusted = max(min(pan, 90), -90)
+            pan_servo_position = int(pan_input_adjusted * (180 / 90) + 90)
+            self.servo.move_servo_position(0, pan_servo_position, 180)  # pan is on pin 0
+        
+        if tilt is not None:
+
+            tilt_input_adjusted = max(min(tilt, 90), -90)
+      
+            tilt_servo_position = int(tilt_input_adjusted * (180 / 90) + 90)
+            self.servo.move_servo_position(1, tilt_servo_position, 180) 
+
+    def moveRobot(self,speed_,heading_, message):
+        if (self.tof_sensor.get_distance() < 500) and message == "drive":
+                speedInput = 0
+        if message == "start_video":
+            self.jsonFile_to_send["videoRunning"] = True
+        elif message == "stop_video":
+            self.jsonFile_to_send["videoRunning"] = False
+        elif message == "drive":
+            self.rvr.drive_with_heading(speed = speed_, heading = heading_, flags=DriveFlagsBitmask.fast_turn.value)
+        elif message == "drive_reverse":
+            self.rvr.drive_with_heading(speed = speed_, heading = heading_, flags=DriveFlagsBitmask.drive_reverse.value)
+        elif message =="dont_drive":
+            self.rvr.drive_with_heading(speed = 0, heading = heading_, flags=DriveFlagsBitmask.none.value)
+        elif message =="collision_detected":
+            self.rvr.drive_with_heading(speed = 0, heading = heading_, flags=DriveFlagsBitmask.none.value)
 
     def run(self):
         self.reciever_thread.start()
@@ -155,8 +185,6 @@ class RvrServer:
     def driverMethod(self):
         def update_jsonFile_to_send(self):
             self.jsonFile_to_send["distance"] = self.tof_sensor.get_distance()
-
-            # Get the current battery percentage
             self.rvr.get_battery_percentage(self.battery_percentage_handler)
         
         speedInput = 0
@@ -182,36 +210,11 @@ class RvrServer:
                 message = "no input"
 
 
-          # Move the servo motors based on pan and tilt values
-            if panInput is not None:
-                # Adjust the input values to be in the range of -90 to 90
-                pan_input_adjusted = max(min(panInput, 90), -90)
-                # Map the adjusted input value to the servo range with 0 in the middle
-                pan_servo_position = int(pan_input_adjusted * (180 / 90) + 90)
-                self.servo.move_servo_position(0, pan_servo_position, 180)  # Assuming pan is on pin 0
-            
-            if tiltInput is not None:
-                # Adjust the input values to be in the range of -90 to 90
-                tilt_input_adjusted = max(min(tiltInput, 90), -90)
-                # Map the adjusted input value to the servo range with 0 in the middle
-                tilt_servo_position = int(tilt_input_adjusted * (180 / 90) + 90)
-                self.servo.move_servo_position(1, tilt_servo_position, 180)  # Assuming tilt is on pin 1
-            
+            self.moveServo(tiltInput,panInput)
+            self.moveRobot(speedInput,headingInput, message)
             update_jsonFile_to_send(self)
-            if (self.tof_sensor.get_distance() < 500) and message == "drive":
-                speedInput = 0
-            if message == "start_video":
-                self.jsonFile_to_send["videoRunning"] = True
-            elif message == "stop_video":
-                self.jsonFile_to_send["videoRunning"] = False
-            elif message == "drive":
-                self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.fast_turn.value)
-            elif message == "drive_reverse":
-                self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
-            elif message =="dont_drive":
-                self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
-            elif message =="collision_detected":
-                self.rvr.drive_with_heading(speed = 0, heading = headingInput, flags=DriveFlagsBitmask.none.value)
+            
+
 
             if self.stopflag.is_set():
                 break
