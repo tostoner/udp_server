@@ -236,6 +236,12 @@ class RvrServer:
             print(f"Driver Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
             time.sleep(self.DT)
 
+    def dump_and_send_json(self, json_data):
+        jsonBytes = json.dumps(json_data).encode('utf-8')
+        self.UDP_send(jsonBytes)
+        #print(f"Sent {len(jsonBytes)} bytes")
+    
+
     def sendingMethod(self):
         iterationcounter = 0
         while not self.stopflag.is_set():
@@ -254,20 +260,12 @@ class RvrServer:
                             "total_parts": len(frame_parts)
                             }
 
-                        jsonBytes = json.dumps(frame_packet).encode('utf-8')
-                        self.UDP_send(jsonBytes)
-                        #print(f"Sent1 {len(jsonBytes)} bytes")
+                        self.dump_and_send_json(self, frame_packet)
+                        self.dump_and_send_json(self, self.jsonFile_to_send)
 
-                        jsonBytes2 = json.dumps(self.jsonFile_to_send).encode('utf-8')
-                        self.UDP_send(jsonBytes2)
-                        #print(self.jsonFile_to_send)
-                        #print(f"Sent2 {len(jsonBytes2)} bytes")
             else:
+                self.dump_and_send_json(self, self.jsonFile_to_send)
 
-                jsonBytes = json.dumps(self.jsonFile_to_send).encode('utf-8')
-                self.UDP_send(jsonBytes)
-                print(self.jsonFile_to_send)
-                print(f"Sent {len(jsonBytes)} bytes")
             end_time = time.time() 
             duration = end_time - start_time  
             print(f"Sending Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
