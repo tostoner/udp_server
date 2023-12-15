@@ -21,7 +21,7 @@ class RvrServer:
     jsonFile_to_send = {"speed": 0, "heading": 0,  "message": "None", "videoRunning": False, "distance": 0}
     jsonFile_recieved = {"speed": 0, "heading": 0, "tiltPosition" : 0, "panPosition" : 0, "message": "None"}
     UDP_PACKET_SIZE = 64000
-    DT = 1/30 #Simply used to do everything at 30Hz. Trying to limit cpu use
+    DT = 1/1000 #Simply used to do everything at 30Hz. Trying to limit cpu use
 
 
 
@@ -151,6 +151,9 @@ class RvrServer:
                 end_time = time.time() 
                 duration = end_time - start_time  
                 print(f"Receiver Iteration time: {duration:.6f} seconds, {iterationcounter} iterations") 
+                time.sleep(1/25)
+
+
     def moveServo(self,tilt,pan): 
         # Move the servo motors based on pan and tilt values
         if pan is not None:
