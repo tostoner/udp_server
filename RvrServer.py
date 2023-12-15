@@ -208,7 +208,7 @@ class RvrServer:
             elif message == "stop_video":
                 self.jsonFile_to_send["videoRunning"] = False
             elif message == "drive":
-                self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.none.value)
+                self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.fast_turn.value)
             elif message == "drive_reverse":
                 self.rvr.drive_with_heading(speed = speedInput, heading = headingInput, flags=DriveFlagsBitmask.drive_reverse.value)
             elif message =="dont_drive":
